@@ -219,10 +219,10 @@ const tagSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  course: {
+  course: [{
     type: Schema.Types.ObjectId,
     ref: "Course",
-  },
+  }],
 });
 
 const otpSchema = new mongoose.Schema({
