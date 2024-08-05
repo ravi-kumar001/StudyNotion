@@ -58,7 +58,7 @@ const isStudent = (req, res, next) => {
   next();
 };
 
-const isInstructor = (req , res , next) =>{
+const isInstructor = (req, res, next) => {
   //   console.log(req.user.role);
   try {
     if (req.user.role != "Instructor") {
@@ -75,7 +75,7 @@ const isInstructor = (req , res , next) =>{
     });
   }
   next();
-}
+};
 
 const isAdmin = (req, res, next) => {
   //   console.log(req.user.role);
@@ -95,3 +95,5 @@ const isAdmin = (req, res, next) => {
   }
   next();
 };
+
+module.exports = { auth, isAdmin, isStudent, isInstructor };

@@ -3,13 +3,20 @@ const { OTP } = require("../DB/Modals/OTP");
 const { Profile } = require("../DB/Modals/Profile");
 const otpGenerator = require("otp-generator");
 const bcrypt = require("bcryptjs");
+const { mailSender } = require("../utils/mailSender");
+const {
+  passwordUpdateTemplate,
+} = require("../mail/templates/passwordUpdateTemplate");
 
 // sendOTP
 const sendOTP = async (req, res) => {
   try {
+    // Fetch Data
     const { email } = req.body;
 
+    // Check user already register or not
     const user = await User.findOne({ email });
+    console.log("User Details => ", user);
 
     if (user) {
       return res.status(401).json({
@@ -45,6 +52,7 @@ const sendOTP = async (req, res) => {
     });
     console.log(otpInfo);
 
+    // Return Response
     res.status(200).json({
       status: 200,
       message: "OTP send successfully",
@@ -231,6 +239,53 @@ const login = async (req, res) => {
 };
 
 // ChangePassword
-const changePassword = (req, res) =>{
-    
-}
+const changePassword = async (req, res) => {
+  try {
+    let user = await User.findById(req.user.id).select("+password");
+    const { oldPassword, newPassword } = req.body;
+
+    if (!(await bcrypt.compare(oldPassword, user.password))) {
+      return res.status(401).json({
+        message: "Password is incorrect",
+        status: 401,
+        success: false,
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user = await User.findByIdAndUpdate(
+      user._id,
+      { password: hashedPassword },
+      { new: true }
+    );
+
+    // Send password change email to user
+    try {
+      const response = await mailSender(
+        user.email,
+        `Password updated successfully for ${user.firstName} ${user.lastName}`,
+        passwordUpdateTemplate(user.email, `${user.firstName} ${user.lastName}`)
+      );
+    } catch (err) {
+      res.status(500).json({
+        message: "Error occurred while sending email",
+        success: false,
+        status: 500,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to change password. Please try again",
+      success: false,
+      status: 500,
+      errror: err.message,
+    });
+  }
+};
+
+module.exports = { sendOTP, register, login, changePassword };

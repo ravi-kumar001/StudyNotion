@@ -1,9 +1,9 @@
-const { Tags } = require("../DB/Modals/Tags");
+const { Category } = require("../DB/Modals/Category");
 const { User } = require("../DB/Modals/User");
 const { Course } = require("../DB/Modals/Course");
 const { uploadFileToCloudinary } = require("../utils/imageUploader");
 
-// Create Course Handler function
+// Create Course Handler function   hame ise category schema ke andar ref push karna hi
 const createCourse = async (req, res) => {
   try {
     // Data fetch
@@ -33,8 +33,8 @@ const createCourse = async (req, res) => {
     }
 
     // check intructor'tag is valid or not
-    const validTagsResponse = await Tags.findById({ tag });
-    if (!validTagsResponse) {
+    const validCategoryResponse = await Category.findById({ tag });
+    if (!validCategoryResponse) {
       res.status(403).json({
         success: false,
         message: "Tag is not found . Please try again later",
@@ -56,11 +56,11 @@ const createCourse = async (req, res) => {
       instructor: instructorDetails._id, // This line shows that we store user id in instructor field
       price,
       whatYouWillLearn,
-      tags: validTagsResponse._id,
+      category: validCategoryResponse._id,
       thumbnail: uploadedThumbnailResponse.secure_url,
     });
 
-    // add this course in user schema for current instructor
+    // add this course in user schema for current instructor i.e update user modal with this course id
     const updatedUserResponse = await User.findByIdAndUpdate(
       {
         id: instructorDetails._id,
@@ -70,7 +70,7 @@ const createCourse = async (req, res) => {
           courses: createCourseResponse._id,
         },
       },
-      { new: true } // this line used for give updated response
+      { new: true } // this line used for give updated response i.e give updated document
     );
     console.log("Update User Response => ", updatedUserResponse);
 
@@ -110,4 +110,53 @@ const getAllCourse = async (req, res) => {
   }
 };
 
-module.exports = { createCourse, getAllCourse };
+// Get Course Details Handler function
+const getCourseDetails = async (req, res) => {
+  try {
+    // find course id
+    const { courseId } = req.body;
+
+    // maro call for courseDetails with courseId and populate karo
+    const courseDetailsResponse = await Course.find({ _id: courseId })
+      .populate({
+        path: "instructor",
+        populate: {
+          path: "additionalDetails",
+        },
+      })
+      .populate("category")
+      .populate("ratingAndReviews")
+      .populate({
+        path: "courseContent",
+        populate: {
+          path: "subSection",
+        },
+      })
+      .exec();
+    console.log("Course Details => ", courseDetailsResponse);
+
+    // Some validation on courseDetailsResponse
+    if (!courseDetailsResponse) {
+      return res.status(404).json({
+        success: false,
+        message: `course Details not found with this ${courseId}`,
+        status: 404,
+      });
+    }
+
+    // return response
+    return res.status(200).json({
+      status: 200,
+      message: "Course Details Fetch successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      status: 500,
+      message:
+        "Something went wrong during Fetching course Details. Please try again",
+    });
+  }
+};
+
+module.exports = { createCourse, getAllCourse, getCourseDetails };

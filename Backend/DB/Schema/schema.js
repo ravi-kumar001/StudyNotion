@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { mailSender } = require("../../utils/mailSender");
+const { Schema } = mongoose;
 
 const userSchema = new mongoose.Schema({
   firstName: {
@@ -135,10 +136,12 @@ const courseSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  courseContent: {
-    type: Schema.Types.ObjectId,
-    ref: "Section",
-  },
+  courseContent: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Section",
+    },
+  ],
   ratingAndReviews: [
     {
       type: Schema.Types.ObjectId,
@@ -156,17 +159,35 @@ const courseSchema = new mongoose.Schema({
     required: true,
   },
   tags: {
+    type: [String],
+    required: true,
+  },
+  category: {
     type: Schema.Types.ObjectId,
-    ref: "Tags",
+    ref: "Category",
   },
   numberOfEnrolledStudents: {
     type: Number,
     default: 0,
   },
+  studentsEnrolled: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      default: [],
+    },
+  ],
+  instructions: [String],
+  status: {
+    type: String,
+    enum: ["Draft", "Published"],
+    default: "Draft",
+  },
 });
 
 const sectionSchema = new mongoose.Schema({
-  title: {
+  sectionName: {
     type: String,
     required: true,
     trim: true,
@@ -188,20 +209,26 @@ const sectionSchema = new mongoose.Schema({
 });
 
 const ratingAndReviewsSchema = new mongoose.Schema({
-  review: {
-    type: String,
-    trim: true,
-    required: true,
-  },
   rating: {
     type: Number,
     min: [1, "Please give rating between 1 and 5"],
     max: [5, "Please give rating between 1 and 5"],
     required: true,
   },
+  review: {
+    type: String,
+    trim: true,
+    required: true,
+  },
   user: {
     type: Schema.Types.ObjectId,
     ref: "User",
+  },
+  course: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Course",
+    required: true,
+    index: true,
   },
   createdAt: {
     type: Date,
@@ -209,7 +236,7 @@ const ratingAndReviewsSchema = new mongoose.Schema({
   },
 });
 
-const tagSchema = new mongoose.Schema({
+const categorySchema = new mongoose.Schema({
   name: {
     type: String,
     trim: true,
@@ -219,10 +246,12 @@ const tagSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  course: [{
-    type: Schema.Types.ObjectId,
-    ref: "Course",
-  }],
+  course: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Course",
+    },
+  ],
 });
 
 const otpSchema = new mongoose.Schema({
@@ -269,6 +298,6 @@ module.exports = {
   courseSchema,
   sectionSchema,
   ratingAndReviewsSchema,
-  tagSchema,
+  categorySchema,
   otpSchema,
 };

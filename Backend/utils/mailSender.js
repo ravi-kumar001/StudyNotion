@@ -3,7 +3,7 @@ require("dotenv").config();
 
 const mailSender = async (email, subject, html) => {
   try {
-    console.log(doc);
+    // console.log(doc);
 
     // we can seperate this code in utils folder
     // create a transporter

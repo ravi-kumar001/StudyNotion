@@ -104,6 +104,13 @@ const resetPassword = async (req, res) => {
       { new: true } // this line give new updated values in which token and resetPasswordExpires exists otherwise this give old value in which this two value missing
     );
     console.log(updateResponse);
+
+    // Return Response
+    return res.status(200).json({
+      message: "Password reset Successfully",
+      success: true,
+      status: 200,
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -113,3 +120,5 @@ const resetPassword = async (req, res) => {
     });
   }
 };
+
+module.exports = { resetPasswordToken, resetPassword };

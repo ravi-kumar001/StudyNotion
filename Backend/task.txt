@@ -1,0 +1,5 @@
+The node-cron module is tiny task scheduler in pure JavaScript for node.js based on GNU crontab. This module allows you to schedule task in node.js using full crontab syntax.
+
+Errors below
+
+in Auth controller sentOtp hf user again generate otp with same email if this is registered
