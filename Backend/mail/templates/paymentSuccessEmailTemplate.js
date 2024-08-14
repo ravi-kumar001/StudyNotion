@@ -95,4 +95,4 @@ const paymentSuccessEmailTemplate = (name, amount, orderId, paymentId) => {
 `;
 }
 
-module.exports = paymentSuccessEmailTemplate
+module.exports = {paymentSuccessEmailTemplate}

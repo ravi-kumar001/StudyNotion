@@ -11,15 +11,12 @@ const userRoute = require("./Routes/User");
 const profileRoute = require("./Routes/Profile");
 const courseRoute = require("./Routes/Course");
 const paymentsRoute = require("./Routes/Payments");
+const reviewsRoute = require("./Routes/RatingAndReviews");
+const categoryRoute = require("./Routes/Category");
 
 // we use cors because backend entertain the frontend request
 var cors = require("cors");
-app.use(
-  cors({
-    origin: "https://localhost:port no",
-    credentials: true,
-  })
-);
+app.use(cors());
 
 // Mongo atlas connect
 main().catch((err) => console.log(err));
@@ -56,10 +53,12 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.use("/api/user", userRoute);
-app.use("/api/course", courseRoute);
-app.use("/api/profile", profileRoute);
-app.use("/api/payments", paymentsRoute);
+app.use("/api/v1/user", userRoute);
+app.use("/api/v1/course", courseRoute);
+app.use("/api/v1/profile", profileRoute);
+app.use("/api/v1/payments", paymentsRoute);
+app.use("/api/v1/reviews", reviewsRoute);
+app.use("/api/v1/categories", categoryRoute);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
