@@ -7,6 +7,7 @@ const { mailSender } = require("../utils/mailSender");
 const {
   passwordUpdateTemplate,
 } = require("../mail/templates/passwordUpdateTemplate");
+const accountCreationTemplate = require("../mail/templates/accountCreationTemplate");
 
 // sendOTP
 const sendOTP = async (req, res) => {
@@ -50,7 +51,7 @@ const sendOTP = async (req, res) => {
       email,
       otp,
     });
-    console.log(otpInfo);
+    console.log("Our OTP Info =>", otpInfo);
 
     // Return Response
     res.status(200).json({
@@ -107,13 +108,13 @@ const register = async (req, res) => {
     }
 
     // Check user already exist
-    const user = await User.findOne({ email });
+    // const user = await User.findOne({ email });
 
-    if (user) {
+    if (await User.findOne({ email })) {
       return res.status(404).json({
         success: false,
         status: 404,
-        message: "User already exists",
+        message: "User already exists.Please Login",
       });
     }
 
@@ -121,7 +122,7 @@ const register = async (req, res) => {
     const recentOTP = await OTP.findOne({ otp })
       .sort({ createdAt: -1 })
       .limit(1);
-    console.log(recentOTP);
+    console.log("Recent OTP Response => ", recentOTP);
 
     // Validate OTP
     if (recentOTP.length == 0) {
@@ -140,27 +141,47 @@ const register = async (req, res) => {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(hashedPassword);
+    console.log("Our Hashed Password => ", hashedPassword);
 
     const profileDetails = await Profile.create({
-      gender: null,
-      dob: null,
-      about: null,
-      contactNumber: null,
+      // gender: null,
+      // dob: null,
+      // about: null,
+      // contactNumber: null,
     });
-    user = new User({
-      // Here we want to create a document in db with new modal instance
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      contactNumber,
-      role,
-      additionalDetails: profileDetails._id,
-      avtar: `https://api.dicebear.com/5.x/initials/svg?spped=${firstName}  ${lastName}`,
-    });
-    await user.save();
+    console.log("Profile Details => ", profileDetails);
 
+    try {
+      const user = await User.create({
+        // if Modal.create not showing error then must use in try-catch block we also use new instance mehtod
+        // Here we want to create a document in db with new modal instance
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+        role,
+        additionalDetails: profileDetails._id,
+        avtar: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}%20${lastName}`,
+      });
+      console.log("User Details => ", user);
+    } catch (error) {
+      console.log("Something went wrong during sign up ", error);
+    }
+
+    // await user.save();
+
+    // Send Email for account creation to student
+    try {
+      await mailSender(
+        email,
+        `Account created successfully for ${firstName} ${lastName}`,
+        accountCreationTemplate(firstName + " " + lastName)
+      );
+    } catch (error) {
+      console.log("Something went wrong", error);
+    }
+
+    // Return response
     res.status(200).json({
       success: true,
       message: "User created successfully",

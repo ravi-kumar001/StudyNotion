@@ -7,7 +7,7 @@ require("dotenv").config();
 const port = process.env.PORT || 3000;
 
 // All Routes import
-const userRoute = require("./Routes/User");
+const authRoute = require("./Routes/Auth");
 const profileRoute = require("./Routes/Profile");
 const courseRoute = require("./Routes/Course");
 const paymentsRoute = require("./Routes/Payments");
@@ -53,7 +53,7 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.use("/api/v1/user", userRoute);
+app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/course", courseRoute);
 app.use("/api/v1/profile", profileRoute);
 app.use("/api/v1/payments", paymentsRoute);
