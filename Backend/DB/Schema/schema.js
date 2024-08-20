@@ -29,11 +29,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ["Admin", "Student", "Instructor"],
   },
-  token: {
-    type: String,
-  },
-  tokenExpires: {
-    type: Date,
+  profile: {
+    type: Schema.Types.ObjectId,
+    ref: "Profile",
   },
   additionalDetails: {
     type: Schema.Types.ObjectId,
@@ -50,6 +48,15 @@ const userSchema = new mongoose.Schema({
       ref: "CourseProgress",
     },
   ],
+  reviews: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Review",
+    },
+  ],
+  token: String,
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
 });
 
 const profileSchema = new mongoose.Schema({
@@ -242,6 +249,7 @@ const categorySchema = new mongoose.Schema({
     type: String,
     trim: true,
     required: true,
+    unique : [true , 'All Category name must be unique']
   },
   description: {
     type: String,

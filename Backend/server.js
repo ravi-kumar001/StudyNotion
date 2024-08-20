@@ -13,6 +13,12 @@ const courseRoute = require("./Routes/Course");
 const paymentsRoute = require("./Routes/Payments");
 const reviewsRoute = require("./Routes/RatingAndReviews");
 const categoryRoute = require("./Routes/Category");
+const courseprogressRoute = require("./Routes/CourseProgress");
+const otherRoute = require("./Routes/Other");
+const sectionRoute = require("./Routes/Section");
+const subsectionRoute = require("./Routes/SubSection");
+
+const errorHandler = require("./middlewares/ErrorHandler");
 
 // we use cors because backend entertain the frontend request
 var cors = require("cors");
@@ -59,6 +65,12 @@ app.use("/api/v1/profile", profileRoute);
 app.use("/api/v1/payments", paymentsRoute);
 app.use("/api/v1/reviews", reviewsRoute);
 app.use("/api/v1/categories", categoryRoute);
+app.use("/api/v1/courseprogress", courseprogressRoute);
+app.use("/api/v1/other", otherRoute);
+app.use("/api/v1/sections", sectionRoute);
+app.use("/api/v1/subsections", subsectionRoute);
+
+app.use(errorHandler); // This is for when error occur in our Application
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

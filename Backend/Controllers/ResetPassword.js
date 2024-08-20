@@ -1,8 +1,10 @@
 const { User } = require("../DB/Modals/User");
 const { mailSender } = require("../utils/mailSender");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
+require("dotenv").config();
 
-// First create ResetToken
+// First create ResetToken  This Handler function written in Auth Controller
 const resetPasswordToken = async (req, res) => {
   try {
     const { email } = req.body;
@@ -55,24 +57,27 @@ const resetPasswordToken = async (req, res) => {
     });
   }
 };
-// Forget Password
 
+// Forget Password we can also write this is in Auth Controller
 const resetPassword = async (req, res) => {
   try {
-    const { token, password, confirmPassword } = req.body;
+    const { resetToken, password } = req.body;
 
-    // validation on password and confirmPassword
-    if (password != confirmPassword) {
+    // validation on resetToken and password
+    if (!(resetToken && password)) {
       return res.status(401).json({
         status: 401,
-        message: "password and confirmPassword not matching",
+        message: "Some Fields Are Missing",
         success: false,
       });
     }
 
-    // Get userDetails from db using token
-    const userDetails = await User.findOne({ token: token });
-
+    // Get userDetails from db using token first Hash the token
+    const resetPasswordToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+    const userDetails = await User.findOne({ resetPasswordToken });
     // If no entry then token is invalid
     if (!userDetails) {
       return res.status(402).json({
@@ -93,17 +98,38 @@ const resetPassword = async (req, res) => {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(hashedPassword);
+    console.log("Hashed Password => ", hashedPassword);
 
     // now Password update
     const updateResponse = await User.findOneAndUpdate(
-      { token: token },
+      userDetails._id,
       {
         password: hashedPassword,
+        resetPasswordExpire: undefined,
+        resetPasswordToken: undefined,
       },
       { new: true } // this line give new updated values in which token and resetPasswordExpires exists otherwise this give old value in which this two value missing
     );
-    console.log(updateResponse);
+    console.log("User Update Response => ", updateResponse);
+
+    // Sent mail for reset password
+
+    try {
+      const mailResponse = await mailSender(
+        userDetails.email,
+        `Password has been reset successfully for ${userDetails.firstName} ${userDetails.lastName}`,
+        `Your password has been reset successfully. Thanks for being with us.
+        To visit our site : ${process.env.STUDY_NOTION_FRONTEND_SITE}
+        `
+      );
+      console.log("Mail Response", mailResponse);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Something went wrong during reset password mail sending",
+      });
+    }
+
+    sendTokenResponse(res, userDetails, 200);
 
     // Return Response
     return res.status(200).json({
@@ -119,6 +145,34 @@ const resetPassword = async (req, res) => {
         "Something went wrong during reset your password . Please try again",
     });
   }
+};
+
+// Function to send token in cookies  // VERIFIED
+const sendTokenResponse = (res, userDetails, statusCode) => {
+  const token = jwt.sign(
+    {
+      id: userDetails._id,
+      email: userDetails.email,
+      role: userDetails.role,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE }
+  );
+
+  const options = {
+    expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+  };
+
+  // if (process.env.NODE_ENV === 'production') {
+  //   options.secure = true;
+  // }
+
+  res.cookie("token", token, options).status(statusCode).json({
+    success: true,
+    userDetails,
+    token,
+  });
 };
 
 module.exports = { resetPasswordToken, resetPassword };

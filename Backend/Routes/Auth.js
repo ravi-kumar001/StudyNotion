@@ -4,6 +4,8 @@ const {
   login,
   changePassword,
   sendOTP,
+  logout,
+  forgotPassword,
 } = require("../Controllers/Auth");
 const {
   resetPassword,
@@ -21,13 +23,14 @@ router.post("/login", login);
 // Route for sending OTP to the user's email
 router.post("/sendotp", sendOTP);
 
+router.post("/logout",logout);
+
 // Change password
 router.post("/changepassword", auth, changePassword);
 
-// Route for generating a reset password token
-router.post("/reset-password-token", resetPasswordToken);
+router.post('/forgotpassword', forgotPassword);
 
 // Route for reseting password
-router.post("/reset-password", resetPassword);
+router.put('/resetpassword', resetPassword);
 
 module.exports = router;

@@ -8,6 +8,9 @@ const {
   passwordUpdateTemplate,
 } = require("../mail/templates/passwordUpdateTemplate");
 const accountCreationTemplate = require("../mail/templates/accountCreationTemplate");
+require("dotenv").config();
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 // sendOTP
 const sendOTP = async (req, res) => {
@@ -115,6 +118,7 @@ const register = async (req, res) => {
         success: false,
         status: 404,
         message: "User already exists.Please Login",
+        error: "User already exists.Please Login",
       });
     }
 
@@ -152,7 +156,7 @@ const register = async (req, res) => {
     console.log("Profile Details => ", profileDetails);
 
     try {
-      const user = await User.create({
+      var user = await User.create({
         // if Modal.create not showing error then must use in try-catch block we also use new instance mehtod
         // Here we want to create a document in db with new modal instance
         firstName,
@@ -180,6 +184,8 @@ const register = async (req, res) => {
     } catch (error) {
       console.log("Something went wrong", error);
     }
+
+    sendTokenResponse(res, user, 201);
 
     // Return response
     res.status(200).json({
@@ -229,14 +235,16 @@ const login = async (req, res) => {
     };
 
     if (await bcrypt.compare(password, user.password)) {
-      var token = jwt.sign(payload, process.env.JWT_TOKEN, {
-        expiresIn: "2h",
+      var token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRE,
       });
+      console.log("Our Token => ", token);
 
       // console.log(typeof user);
-      user = user.toObject();
+      // user = user.toObject();
       user.token = token;
       user.password = undefined;
+      console.log("User Details ", user);
 
       const options = {
         expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
@@ -255,6 +263,26 @@ const login = async (req, res) => {
       status: 500,
       success: false,
       message: "Login Failed.Please try again later",
+    });
+  }
+};
+
+const logout = async (req, res) => {
+  try {
+    res
+      .cookie("token", "none", {
+        expires: new Date(Date.now() + 10 * 1000),
+        httpOnly: true,
+      })
+      .status(200)
+      .json({
+        success: true,
+        data: {},
+      });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to LogOut.",
     });
   }
 };
@@ -309,4 +337,119 @@ const changePassword = async (req, res) => {
   }
 };
 
-module.exports = { sendOTP, register, login, changePassword };
+// @desc      Forgot Password - send rest url to user
+// @route     POST /api/v1/auth/forgotpassword
+// @access    Public  // VERIFIED
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Validation
+    if (!email) {
+      return res.status(401).json({
+        message: "Input Fields are Missing",
+        success: false,
+        status: 401,
+      });
+    }
+
+    // Check for user is exist
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not register.Please register first",
+        error: "User is not register.Please Register first",
+        status: 400,
+      });
+    }
+
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    console.log("Reset Token => ", resetToken);
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+    console.log("Hashed Token => ", hashedToken);
+    await User.findOneAndUpdate(
+      { email },
+      {
+        resetPasswordToken: hashedToken,
+        resetPasswordExpire: Date.now() + 10 * 60 * 1000,
+      },
+      { new: true }
+    );
+
+    const resetUrl = `${process.env.STUDY_NOTION_FRONTEND_SITE}/reset-password?reset-token=${resetToken}`;
+
+    // Send Email to the user
+    try {
+      const mailResponse = await mailSender(
+        user.email,
+        `Password reset for ${user.firstName} ${user.lastName}`,
+        `You are receiving this email because you (or someone else) has requested the reset of your Study Notion account password. 
+        Please click below to reset your password : \n\n ${resetUrl}
+        `
+      );
+      console.log("Mail Response => ", mailResponse);
+    } catch (error) {
+      return res.status(500).json({
+        error,
+        success: false,
+        status: 500,
+        message:
+          "Something went wrong during sent email during forget password",
+      });
+    }
+
+    return res.status(200).json({
+      message:
+        "Reset email sent successfully. Please check your email to reset password",
+      success: true,
+      status: 200,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong during forgot password",
+      error: "Something went wrong during forgot password",
+    });
+  }
+};
+
+// Function to send token in cookies  // VERIFIED
+const sendTokenResponse = (res, user, statusCode) => {
+  const token = jwt.sign(
+    {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE }
+  );
+
+  const options = {
+    expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+  };
+
+  // if (process.env.NODE_ENV === "production") {
+  //   options.secure = true;
+  // }
+
+  res.cookie("token", token, options).status(statusCode).json({
+    success: true,
+    user,
+    token,
+  });
+};
+
+module.exports = {
+  sendOTP,
+  register,
+  login,
+  logout,
+  changePassword,
+  forgotPassword,
+};
