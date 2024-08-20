@@ -3,3 +3,5 @@ The node-cron module is tiny task scheduler in pure JavaScript for node.js based
 Errors below
 
 in Auth controller sentOtp hf user again generate otp with same email if this is registered
+
+read about autoPrefixer

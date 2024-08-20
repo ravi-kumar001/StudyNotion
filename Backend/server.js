@@ -3,6 +3,7 @@ const cookieParser = require("cookie-parser");
 const { main } = require("./DB/db");
 const app = express();
 require("dotenv").config();
+const morgan = require('morgan');
 
 const port = process.env.PORT || 3000;
 
@@ -17,12 +18,18 @@ const courseprogressRoute = require("./Routes/CourseProgress");
 const otherRoute = require("./Routes/Other");
 const sectionRoute = require("./Routes/Section");
 const subsectionRoute = require("./Routes/SubSection");
+const userRoute = require("./Routes/User");
 
 const errorHandler = require("./middlewares/ErrorHandler");
 
 // we use cors because backend entertain the frontend request
 var cors = require("cors");
 app.use(cors());
+
+// Dev logging middleware
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 // Mongo atlas connect
 main().catch((err) => console.log(err));
@@ -60,6 +67,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/auth", authRoute);
+app.use("/api/v1/users", userRoute);
 app.use("/api/v1/course", courseRoute);
 app.use("/api/v1/profile", profileRoute);
 app.use("/api/v1/payments", paymentsRoute);
