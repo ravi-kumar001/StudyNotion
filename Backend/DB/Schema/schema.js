@@ -22,8 +22,9 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    min: [6, "Password should be greater than 6 charactor"],
+    minlength: [6, "Password should be greater than 6 characters"],
   },
+  
   // Here confirm password is not required because we don't need store in db we only validate this from req.body
   role: {
     type: String,
@@ -63,11 +64,11 @@ const profileSchema = new mongoose.Schema({
   gender: {
     type: String,
     enum: ["Male", "Female", "Non-Binary", "Prefer not to say", "Other", null],
-    default: null,
+    // default: null,
   },
   dob: {
     type: String,
-    default: null,
+    // default: null,
   },
   about: {
     type: String,

@@ -4,9 +4,7 @@ const { Profile } = require("../DB/Modals/Profile");
 const otpGenerator = require("otp-generator");
 const bcrypt = require("bcryptjs");
 const { mailSender } = require("../utils/mailSender");
-const {
-  passwordUpdateTemplate,
-} = require("../mail/templates/passwordUpdateTemplate");
+const passwordUpdateTemplate = require("../mail/templates/passwordUpdateTemplate");
 const accountCreationTemplate = require("../mail/templates/accountCreationTemplate");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
@@ -252,11 +250,17 @@ const login = async (req, res) => {
         httpOnly: true,
       };
 
-      res.cookie("token", token, options).status(200).json({
+      return res.cookie("token", token, options).status(200).json({
         token,
         user,
         status: 200,
         message: "User logged In successfully",
+      });
+    } else {
+      return res.status(403).json({
+        success: false,
+        error: "Incorrect Password",
+        message: "Incorrect Password ",
       });
     }
   } catch (error) {
@@ -288,8 +292,11 @@ const logout = async (req, res) => {
   }
 };
 
-// ChangePassword
+// @desc      Change Password
+// @route     PUT /api/v1/auth/changepassword
+// @access    Private  // VERIFIED
 const changePassword = async (req, res) => {
+  console.log("This function is called");
   try {
     let user = await User.findById(req.user.id).select("+password");
     const { oldPassword, newPassword } = req.body;
@@ -297,39 +304,48 @@ const changePassword = async (req, res) => {
     if (!(await bcrypt.compare(oldPassword, user.password))) {
       return res.status(401).json({
         message: "Password is incorrect",
-        status: 401,
+        error: "Incorrect Password",
         success: false,
       });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
+
     user = await User.findByIdAndUpdate(
       user._id,
       { password: hashedPassword },
       { new: true }
     );
 
+    // console.log(
+    //   "user",
+    //   user.email,
+    //   " ",
+    //   user.firstName,
+    //   `${user.firstName} ${user.lastName}`
+    // );
+
     // Send password change email to user
     try {
-      const response = await mailSender(
+      await mailSender(
         user.email,
         `Password updated successfully for ${user.firstName} ${user.lastName}`,
         passwordUpdateTemplate(user.email, `${user.firstName} ${user.lastName}`)
       );
     } catch (err) {
-      res.status(500).json({
+      return res.status(500).json({
         message: "Error occurred while sending email",
         success: false,
         status: 500,
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Password updated successfully",
     });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to change password. Please try again",
       success: false,
       status: 500,
@@ -443,7 +459,7 @@ const sendTokenResponse = (res, user, statusCode) => {
   res.set("X-Custom-Header", "CustomValue");
   res.set("X-Powered-By", "Express");
 
-  res.cookie("token", token, options).status(statusCode).json({
+  return res.cookie("token", token, options).status(statusCode).json({
     success: true,
     user,
     token,
