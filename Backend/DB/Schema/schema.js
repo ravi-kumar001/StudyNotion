@@ -33,10 +33,10 @@ const userSchema = new mongoose.Schema({
     type: Schema.Types.ObjectId,
     ref: "Profile",
   },
-  additionalDetails: {
-    type: Schema.Types.ObjectId,
-    ref: "Profile",
-  },
+  // additionalDetails: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: "Profile",
+  // },
   courses: [{ type: Schema.Types.ObjectId, ref: "Course" }],
   avatar: {
     type: String,

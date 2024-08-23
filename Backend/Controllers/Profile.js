@@ -11,18 +11,21 @@ const updateProfile = async (req, res) => {
     const { dob, about, gender, contactNumber, firstName, lastName } = req.body; // Here dob = "", about = "" ka matlab if this is exist then its value asign otherwise empty string asign
     const userId = req.user.id;
 
+    console.log("Gender => ", gender);
+
     // Validation on data
     if (!gender || !contactNumber || !userId || !firstName || !lastName) {
       return res.status(400).json({
         success: false,
         message: "All Fields are required",
+        error: "Fill All Fields",
         status: 400,
       });
     }
 
     // find Profile
     const user = await User.findById(userId);
-    const profileId = user.additionalDetails;
+    const profileId = user.profile;
     const profile = await Profile.findById(profileId);
 
     // update Profile  we create a nulisit profile modal so we can only use save method with asign this new value
@@ -32,11 +35,25 @@ const updateProfile = async (req, res) => {
     profile.contactNumber = contactNumber;
     await profile.save();
 
+    // also change firstName and lastName in User Document
+    const updatedUserResponse = await User.findByIdAndUpdate(
+      userId,
+      {
+        firstName,
+        lastName,
+      },
+      {
+        runValidators: true, // we also pass this type of options {runValidator , new} by default this is true we not need this like {runValidators : true , new : true}
+        new: true,
+      }
+    );
+    console.log("Updated User Response => ", updatedUserResponse);
+
     //  return response
     return res.status(200).json({
       success: true,
-      status: 200,
-      message: "Profile created successfully",
+      data: updatedUserResponse,
+      message: "Profile Updated Successfully",
     });
   } catch (error) {
     return res.status(500).json({

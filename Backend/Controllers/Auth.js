@@ -161,7 +161,7 @@ const signup = async (req, res) => {
         email,
         password: hashedPassword,
         role,
-        additionalDetails: profileDetails._id,
+        profile: profileDetails._id,
         avatar: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}%20${lastName}`,
       });
       console.log("User Details => ", user);
@@ -219,7 +219,7 @@ const login = async (req, res) => {
     }
 
     // check user exists or not
-    let user = await User.findOne({ email }).populate("additionalDetails");
+    let user = await User.findOne({ email }).populate("profile");
     if (!user) {
       res.json({
         status: 402,
