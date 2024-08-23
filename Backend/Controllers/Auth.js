@@ -72,7 +72,7 @@ const sendOTP = async (req, res) => {
 };
 
 // register
-const register = async (req, res) => {
+const signup = async (req, res) => {
   try {
     const {
       firstName,
@@ -97,6 +97,7 @@ const register = async (req, res) => {
       return res.status(402).json({
         success: false,
         message: "All Fields are required",
+        error: "All Fields are required",
         status: 401,
       });
     }
@@ -106,6 +107,7 @@ const register = async (req, res) => {
       return res.status(403).json({
         success: false,
         message: "Password doesn't match",
+        error: "Password doesn't match",
         status: 403,
       });
     }
@@ -123,23 +125,18 @@ const register = async (req, res) => {
     }
 
     // Find most recent otp
-    const recentOTP = await OTP.findOne({ otp })
+    const recentOTP = await OTP.findOne({ email })
       .sort({ createdAt: -1 })
       .limit(1);
     console.log("Recent OTP Response => ", recentOTP);
 
     // Validate OTP
-    if (recentOTP.length == 0) {
-      res.status(405).json({
-        success: false,
-        message: "OTP not found",
-        status: 405,
-      });
-    } else if (otp != recentOTP.otp) {
-      res.status(406).json({
+    if (recentOTP.length === 0 || recentOTP.otp !== otp) {
+      return res.status(405).json({
         success: false,
         message: "Wrong OTP",
-        status: 406,
+        error: "Wrong OTP",
+        status: 405,
       });
     }
 
@@ -148,10 +145,10 @@ const register = async (req, res) => {
     console.log("Our Hashed Password => ", hashedPassword);
 
     const profileDetails = await Profile.create({
-      // gender: null,
-      // dob: null,
-      // about: null,
-      // contactNumber: null,
+      gender: null,
+      dob: null,
+      about: null,
+      contactNumber: null,
     });
     console.log("Profile Details => ", profileDetails);
 
@@ -165,7 +162,7 @@ const register = async (req, res) => {
         password: hashedPassword,
         role,
         additionalDetails: profileDetails._id,
-        avtar: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}%20${lastName}`,
+        avatar: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}%20${lastName}`,
       });
       console.log("User Details => ", user);
     } catch (error) {
@@ -187,12 +184,16 @@ const register = async (req, res) => {
 
     sendTokenResponse(res, user, 201);
 
-    // Return response
-    res.status(200).json({
-      success: true,
-      message: "User created successfully",
-      status: 200,
-    });
+    // // Setting custom headers
+    // res.set("X-Custom-Header", "CustomValue");
+    // res.set("X-Powered-By", "Express");
+
+    // // Return response
+    // res.status(200).json({
+    //   success: true,
+    //   message: "User created successfully",
+    //   status: 200,
+    // });
   } catch (error) {
     return res.status(500).json({
       status: 500,
@@ -438,16 +439,21 @@ const sendTokenResponse = (res, user, statusCode) => {
   //   options.secure = true;
   // }
 
+  // Setting custom headers
+  res.set("X-Custom-Header", "CustomValue");
+  res.set("X-Powered-By", "Express");
+
   res.cookie("token", token, options).status(statusCode).json({
     success: true,
     user,
     token,
+    message: "User Created Successfully",
   });
 };
 
 module.exports = {
   sendOTP,
-  register,
+  signup,
   login,
   logout,
   changePassword,

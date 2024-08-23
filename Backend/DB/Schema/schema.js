@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
     ref: "Profile",
   },
   courses: [{ type: Schema.Types.ObjectId, ref: "Course" }],
-  avtar: {
+  avatar: {
     type: String,
     required: true,
   },

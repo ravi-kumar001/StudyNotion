@@ -2,14 +2,17 @@ const { User } = require("../DB/Modals/User");
 const { Profile } = require("../DB/Modals/Profile");
 
 // Update Profile Handler Function why here updateProfile not createProfile because we already create a nullist profile when create user Modal
+//@desc   update Profile of current user Logged in
+//@route    PUT /api/v1/profiles
+//access      Private
 const updateProfile = async (req, res) => {
   try {
     // Fetch data
-    const { dob = "", about = "", gender, contactNumber } = req.body; // Here dob = "", about = "" ka matlab if this is exist then its value asign otherwise empty string asign
+    const { dob, about, gender, contactNumber, firstName, lastName } = req.body; // Here dob = "", about = "" ka matlab if this is exist then its value asign otherwise empty string asign
     const userId = req.user.id;
 
     // Validation on data
-    if (!gender || !contactNumber || !userId) {
+    if (!gender || !contactNumber || !userId || !firstName || !lastName) {
       return res.status(400).json({
         success: false,
         message: "All Fields are required",
@@ -123,7 +126,6 @@ const getEnrolledCourses = async (req, res) => {};
 // Instructor DashBoard
 const instructorDashboard = async (req, res) => {
   try {
-    
   } catch (error) {
     return res.status(500).json({
       status: 500,

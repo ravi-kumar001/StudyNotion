@@ -5,3 +5,5 @@ Errors below
 in Auth controller sentOtp hf user again generate otp with same email if this is registered
 
 read about autoPrefixer
+
+create a function after userDelete cloudinary also delte its everything

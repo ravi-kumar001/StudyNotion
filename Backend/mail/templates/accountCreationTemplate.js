@@ -69,7 +69,7 @@ const accountCreationTemplate = (name) => {
     <div class="container">
       <!-- Header -->
       <div>
-        <a href="https://study-notion-mern-sunny8080.netlify.app/">
+        <a href="https://ww7.solarmovie.to/">
           <img class="logo" src="https://i.postimg.cc/qMRF0ctw/logo-yellow-email.png" alt="StudyNotion-Logo" />
         </a>
       </div>
@@ -82,14 +82,14 @@ const accountCreationTemplate = (name) => {
         <p>Your account is successfully registered on StudyNotion. We are happy to have you onboard !</p>
 
         <p>Please log in to your dashboard to start your journey.</p>
-        <a class="cta" href="https://study-notion-mern-sunny8080.netlify.app/dashboard/my-profile">Go to Dashboard</a>
+        <a class="cta" href="http://localhost:5173/dashboard/my-profile">Go to Dashboard</a>
 
         <p>Happy journey !</p>
       </div>
 
       <!-- Footer -->
       <div class="support">
-        <p>If you have any questions or need assistance, please feel free to reach out to us at <a href="mailto:moviesguruji73529+info@gmail.com">moviesguruji73529+info@gmail.com</a>. We are here to help!</p>
+        <p>If you have any questions or need assistance, please feel free to reach out to us at <a href="https://1flix.to/home">moviesguruji73529+info@gmail.com</a>. We are here to help!</p>
       </div>
     </div>
   </body>

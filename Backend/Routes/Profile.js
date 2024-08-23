@@ -9,12 +9,13 @@ const {
 const { auth } = require("../middlewares/Auth");
 const router = express.Router();
 
-router.put("/update-profile", auth, updateProfile);
-router.delete("/delete-account", auth, deleteAccount);
-router.get("/get-all-user-details", auth, getAllUserDetails);
+// router.put("/update-profile", auth, updateProfile);
+// router.delete("/delete-account", auth, deleteAccount);
+// router.get("/get-all-user-details", auth, getAllUserDetails);
 
-// Get Enrolled Courses
-router.get("/getEnrolledCourses", auth, getEnrolledCourses);
-router.put("/updateDisplayPicture", auth, updateDisplayPicture);
+// // Get Enrolled Courses
+// router.get("/getEnrolledCourses", auth, getEnrolledCourses);
+// router.put("/updateDisplayPicture", auth, updateDisplayPicture);
+router.put("/", auth, updateProfile);
 
 module.exports = router;

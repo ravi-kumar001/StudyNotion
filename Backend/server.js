@@ -1,13 +1,15 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const errorHandler = require("./middlewares/ErrorHandler");
 const { main } = require("./DB/db");
 const app = express();
 require("dotenv").config();
-const morgan = require('morgan');
+const morgan = require("morgan");
+var cors = require("cors");
 
 const port = process.env.PORT || 3000;
 
-// All Routes import
+// Routes Mount
 const authRoute = require("./Routes/Auth");
 const profileRoute = require("./Routes/Profile");
 const courseRoute = require("./Routes/Course");
@@ -20,18 +22,22 @@ const sectionRoute = require("./Routes/Section");
 const subsectionRoute = require("./Routes/SubSection");
 const userRoute = require("./Routes/User");
 
-const errorHandler = require("./middlewares/ErrorHandler");
-
 // we use cors because backend entertain the frontend request
-var cors = require("cors");
-app.use(cors());
+const corsOptions = {
+  origin: " http://localhost:5173", // restricts access to this origin
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // allowed HTTP methods
+  allowedHeaders: ["Content-Type", "Authorization"], // allowed headers
+  credentials: true, // allows cookies and credentials to be sent
+  optionsSuccessStatus: 204, // status code for successful OPTIONS requests
+};
+app.use(cors(corsOptions)); // Read About This
 
 // Dev logging middleware
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
 }
 
-// Mongo atlas connect
+// Mongo atlas se connect
 main().catch((err) => console.log(err));
 
 // Cloudinary se connect
@@ -69,7 +75,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/course", courseRoute);
-app.use("/api/v1/profile", profileRoute);
+app.use("/api/v1/profiles", profileRoute);
 app.use("/api/v1/payments", paymentsRoute);
 app.use("/api/v1/reviews", reviewsRoute);
 app.use("/api/v1/categories", categoryRoute);

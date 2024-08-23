@@ -130,7 +130,7 @@ const getAllRatingAndReviews = async (req, res) => {
       .sort({
         rating: "desc",
       })
-      .populate({ path: "user", select: "firstName lastName email avtar" })
+      .populate({ path: "user", select: "firstName lastName email avatar" })
       .populate({ path: "course", select: "courseName" })
       .exec();
     console.log(allRatingAndReviews);

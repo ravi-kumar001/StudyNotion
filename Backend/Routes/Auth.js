@@ -1,11 +1,11 @@
 const express = require("express");
 const {
-  register,
   login,
   changePassword,
   sendOTP,
   logout,
   forgotPassword,
+  signup,
 } = require("../Controllers/Auth");
 const {
   resetPassword,
@@ -15,7 +15,7 @@ const { auth } = require("../middlewares/Auth");
 const router = express.Router();
 
 // Route for user registration
-router.post("/signup", register);
+router.post("/signup", signup);
 
 // Route for user login
 router.post("/login", login);
