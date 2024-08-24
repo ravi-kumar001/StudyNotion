@@ -1,7 +1,6 @@
 const express = require("express");
 const {
   updateProfile,
-  deleteAccount,
   getAllUserDetails,
   getEnrolledCourses,
   updateDisplayPicture,

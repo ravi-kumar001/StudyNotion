@@ -1,5 +1,8 @@
+const { Profile } = require("../DB/Modals/Profile");
 const { User } = require("../DB/Modals/User");
+const deleteAccoutTemplate = require("../mail/templates/deleteAccoutTemplate");
 const { uploadFileToCloudinary } = require("../utils/imageUploader");
+const { mailSender } = require("../utils/mailSender");
 require("dotenv").config();
 
 const currentUser = async (req, res) => {
@@ -40,8 +43,8 @@ const currentUser = async (req, res) => {
 };
 
 //@desc     Change avatar of user
-// @route     PUT /api/v1/users/changeavatar
-// @access    Private // VERIFIED
+//@route     PUT /api/v1/users/changeavatar
+//@access    Private // VERIFIED
 const changeAvatar = async (req, res) => {
   try {
     if (!(req.files && req.files.file)) {
@@ -120,4 +123,57 @@ const changeAvatar = async (req, res) => {
   }
 };
 
-module.exports = { currentUser, changeAvatar };
+//@desc     delete current user Account
+//@route    DELETE /api/v1/users/deletecurrentuser
+//@access   Private // VERIFIED
+const deleteCurrentUser = async (req, res) => {
+  try {
+    // Get Id
+    const userId = req.user.id;
+
+    // Validation this user exist or not
+    const user = await User.findById(userId).exec();
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User n't found",
+        status: 400,
+      });
+    }
+
+    // First delete user profile modal
+    await Profile.findByIdAndDelete({ _id: user.profile });
+
+    try {
+      await mailSender(
+        user.email,
+        `Account Deleted successfully for ${user.firstName} ${user.lastName}`,
+        deleteAccoutTemplate(user.email, `${user.firstName} ${user.lastName}`)
+      );
+    } catch (error) {
+      return res.status(401).json({
+        error: "Send Mail Failed",
+        success: false,
+      });
+    }
+
+    // Now delete user modal
+    await User.findByIdAndDelete({ _id: userId });
+
+    // Return response
+    return res.status(200).json({
+      status: 200,
+      message: "Account deleted successfully",
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      status: 500,
+      message: "Something went wrong during delete Account . Please try again",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { currentUser, changeAvatar, deleteCurrentUser };

@@ -104,4 +104,4 @@ exports.contactUsEmail = (
 </html>
 
   `;
-}
+};

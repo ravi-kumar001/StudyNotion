@@ -5,4 +5,5 @@ const RatingAndReviews = mongoose.model(
   "RatingAndReviews",
   ratingAndReviewsSchema
 );
+
 module.exports = { RatingAndReviews };

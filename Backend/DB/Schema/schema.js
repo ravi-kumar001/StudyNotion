@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: [6, "Password should be greater than 6 characters"],
   },
-  
+
   // Here confirm password is not required because we don't need store in db we only validate this from req.body
   role: {
     type: String,
@@ -250,7 +250,7 @@ const categorySchema = new mongoose.Schema({
     type: String,
     trim: true,
     required: true,
-    unique : [true , 'All Category name must be unique']
+    unique: [true, "All Category name must be unique"],
   },
   description: {
     type: String,
@@ -277,6 +277,36 @@ const otpSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
     expires: "5m", // This will be automatically deleted after 5 minute
+  },
+});
+
+const otherSchema = new mongoose.Schema({
+  firstName: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  lastName: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  email: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  countryCode: {
+    type: String,
+    required: true,
+  },
+  phoneNo: {
+    type: Number,
+    required: true,
+  },
+  message: {
+    type: String,
+    required: true,
   },
 });
 
@@ -310,4 +340,5 @@ module.exports = {
   ratingAndReviewsSchema,
   categorySchema,
   otpSchema,
+  otherSchema
 };

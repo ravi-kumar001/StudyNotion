@@ -1,0 +1,1 @@
+try to chatGPT and if you have no log of error then try to log error of catch block
