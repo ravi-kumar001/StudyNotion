@@ -102,18 +102,7 @@ const updateDisplayPicture = async (req, res) => {};
 // Get Enrolled Courses
 const getEnrolledCourses = async (req, res) => {};
 
-// Instructor DashBoard
-const instructorDashboard = async (req, res) => {
-  try {
-  } catch (error) {
-    return res.status(500).json({
-      status: 500,
-      message: "Internal server Error in instructor dashboard",
-      error: error.message,
-      success: false,
-    });
-  }
-};
+
 
 module.exports = {
   updateProfile,

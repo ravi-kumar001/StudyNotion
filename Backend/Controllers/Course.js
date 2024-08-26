@@ -4,6 +4,9 @@ const { Course } = require("../DB/Modals/Course");
 const { uploadFileToCloudinary } = require("../utils/imageUploader");
 
 // Create Course Handler function   hame ise category schema ke andar ref push karna hi
+// @desc      Create Course
+// @route     POST /api/v1/courses
+// @access    Private/instructor
 const createCourse = async (req, res) => {
   try {
     // Data fetch
@@ -159,4 +162,6 @@ const getCourseDetails = async (req, res) => {
   }
 };
 
-module.exports = { createCourse, getAllCourse, getCourseDetails };
+const getAllPublishedCourses = async (req, res) => {};
+
+module.exports = { createCourse, getAllPublishedCourses };

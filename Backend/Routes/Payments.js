@@ -4,15 +4,15 @@ const {
   verifyPayment,
   sendPaymentSuccessEmail,
 } = require("../Controllers/Payments");
-const { auth, isStudent } = require("../middlewares/Auth");
+const { auth, authorize } = require("../middlewares/Auth");
 const router = express.Router();
 
-router.post("capture-payment", auth, isStudent, capturePayment);
-router.post("verify-payment", auth, isStudent, verifyPayment);
+router.post("capture-payment", auth, authorize("Student"), capturePayment);
+router.post("verify-payment", auth, authorize("Student"), verifyPayment);
 router.post(
   "sent-payment-success-email",
   auth,
-  isStudent,
+  authorize("Student"),
   sendPaymentSuccessEmail
 );
 

@@ -15,6 +15,7 @@ const router = express.Router();
 // // Get Enrolled Courses
 // router.get("/getEnrolledCourses", auth, getEnrolledCourses);
 // router.put("/updateDisplayPicture", auth, updateDisplayPicture);
+
 router.put("/", auth, updateProfile);
 
 module.exports = router;

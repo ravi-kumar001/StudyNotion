@@ -7,3 +7,6 @@ in Auth controller sentOtp hf user again generate otp with same email if this is
 read about autoPrefixer
 
 create a function after userDelete cloudinary also delte its everything
+
+create a validation during when a user signup then make sure user write a same email otherwise send response
+create a validation during when a user login then make sure user write a same email otherwise send response

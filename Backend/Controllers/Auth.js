@@ -296,7 +296,6 @@ const logout = async (req, res) => {
 // @route     PUT /api/v1/auth/changepassword
 // @access    Private  // VERIFIED
 const changePassword = async (req, res) => {
-  console.log("This function is called");
   try {
     let user = await User.findById(req.user.id).select("+password");
     const { oldPassword, newPassword } = req.body;

@@ -1,5 +1,6 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const cloudinary = require("./Config/cloudinary");
 const errorHandler = require("./middlewares/ErrorHandler");
 const app = express();
 require("dotenv").config();
@@ -43,11 +44,9 @@ if (process.env.NODE_ENV === "development") {
 dbConnect();
 
 // Cloudinary se connect
-const cloudinary = require("./Config/cloudinary");
 cloudinary.cloudinaryConnect();
 
 // Body parser
-
 app.use(bodyParser.json()); // to support JSON-encoded bodies
 app.use(
   bodyParser.urlencoded({
@@ -75,7 +74,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/users", userRoute);
-app.use("/api/v1/course", courseRoute);
+app.use("/api/v1/courses", courseRoute);
 app.use("/api/v1/profiles", profileRoute);
 app.use("/api/v1/payments", paymentsRoute);
 app.use("/api/v1/reviews", reviewsRoute);

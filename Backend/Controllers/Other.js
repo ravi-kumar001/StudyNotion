@@ -7,7 +7,6 @@ require("dotenv").config();
 //@route      POST /api/v1/other/contactus
 //@access     PUBLIC
 const contactUs = async (req, res) => {
-  console.log("This function is called");
   const { firstName, lastName, email, countryCode, phoneNo, message } =
     req.body;
 

@@ -1,6 +1,9 @@
 const { Category } = require("../DB/Modals/Category");
 
 // Create Category   hame course schema ko bhi update karna hai
+// @desc      Create a category
+// @route     POST /api/v1/categories
+// @access    Private/Admin // VERIFIED
 const createCategory = async (req, res) => {
   try {
     // Fetch Data
@@ -20,12 +23,11 @@ const createCategory = async (req, res) => {
       name,
       description,
     });
-    console.log(createCategoryResponse);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Category create successfully",
-      status: 200,
+      data: createCategoryResponse,
     });
   } catch (error) {
     return res.status(500).json({
@@ -38,17 +40,19 @@ const createCategory = async (req, res) => {
 };
 
 // Get All Category
-const getAllCategory = async (req, res) => {
+const getAllCategories = async (req, res) => {
   try {
-    const getAllCategoryResponse = await Category.find(
-      {},
-      { name: true }, // Here getAllCategory Variable return this value
-      { description: true } // Here getAllCategory Variable return this value
-    );
-    console.log(getAllCategoryResponse);
+    // const getAllCategoryResponse = await Category.find(
+    //   {},
+    //   { name: true }, // Here getAllCategory Variable return this value
+    //   { description: true } // Here getAllCategory Variable return this value
+    // );
+    const getAllCategoryResponse = await Category.find({}, "name description");
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
+      data: getAllCategoryResponse,
+      count: getAllCategoryResponse.length,
       message: "All Category find successfully",
       status: 200,
     });
@@ -63,7 +67,7 @@ const getAllCategory = async (req, res) => {
 };
 
 // CategoryPage Details
-const categoryPageDetails = async (req, res) => {
+const getAllCategoryCourses = async (req, res) => {
   try {
     // Fetch category Id
     const { categoryId } = req.body;
@@ -124,4 +128,4 @@ const categoryPageDetails = async (req, res) => {
   }
 };
 
-module.exports = { createCategory, getAllCategory, categoryPageDetails };
+module.exports = { createCategory, getAllCategories, getAllCategoryCourses };

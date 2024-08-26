@@ -5,6 +5,9 @@ const { uploadFileToCloudinary } = require("../utils/imageUploader");
 const { mailSender } = require("../utils/mailSender");
 require("dotenv").config();
 
+// @desc      Get current user
+// @route     GET /api/v1/users/currentuser
+// @access    Private // VERIFIED
 const currentUser = async (req, res) => {
   const { id } = req.user;
   console.log("User id => ", id);
@@ -42,9 +45,9 @@ const currentUser = async (req, res) => {
   }
 };
 
-//@desc     Change avatar of user
-//@route     PUT /api/v1/users/changeavatar
-//@access    Private // VERIFIED
+// @desc     Change avatar of user
+// @route     PUT /api/v1/users/changeavatar
+// @access    Private // VERIFIED
 const changeAvatar = async (req, res) => {
   try {
     if (!(req.files && req.files.file)) {
@@ -123,9 +126,9 @@ const changeAvatar = async (req, res) => {
   }
 };
 
-//@desc     delete current user Account
-//@route    DELETE /api/v1/users/deletecurrentuser
-//@access   Private // VERIFIED
+// @desc     delete current user Account
+// @route    DELETE /api/v1/users/deletecurrentuser
+// @access   Private // VERIFIED
 const deleteCurrentUser = async (req, res) => {
   try {
     // Get Id
@@ -176,4 +179,97 @@ const deleteCurrentUser = async (req, res) => {
   }
 };
 
-module.exports = { currentUser, changeAvatar, deleteCurrentUser };
+// @desc      Get Instructor Dashboard data of a Instructor
+// @route     GET /api/v1/users/getinstructordashboarddata
+// @access    Private/Instructor
+const instructorDashboard = async (req, res) => {
+  try {
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      message: "Internal server Error in instructor dashboard",
+      error: error.message,
+      success: false,
+    });
+  }
+};
+
+// @desc      Get all users
+// @route     GET /api/v1/users
+// @access    Private/Admin // VERIFIED
+const getUsers = async (req, res) => {
+  try {
+    const users = await User.findOne(req.user.id)
+      .populate("profile")
+      .populate("courses")
+      .exec();
+    return res.status(200).json({
+      success: true,
+      count: users.length,
+      data: users,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: "Failed to get all users, please try again",
+      success: false,
+    });
+  }
+};
+
+// @desc      Get single user by id
+// @route     GET /api/v1/users/getuser/:id
+// @access    Private/Admin // VERIFIED
+const getUser = async (req, res) => {
+  try {
+    const user = await User.findOne(req.user.id)
+      .populate("profile")
+      .populate("courses")
+      .exec();
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        error: "No such user found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: "No such user found",
+      success: false,
+    });
+  }
+};
+
+// @desc      Get all courses created by current instructor
+// @route     GET /api/v1/users/getcreatedcourses
+// @access    Private/Instructor
+const getCreatedCourses = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate("courses").exec();
+
+    return res.status(200).json({
+      success: true,
+      count: user.courses.length,
+      data: user.courses,
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: "Failed to fetch all courses", success: false });
+  }
+};
+
+module.exports = {
+  currentUser,
+  changeAvatar,
+  deleteCurrentUser,
+  instructorDashboard,
+  getUsers,
+  getUser,
+  getCreatedCourses,
+};

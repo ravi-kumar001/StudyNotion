@@ -123,7 +123,9 @@ const getAverageRating = async (req, res) => {
   }
 };
 
-// Get All Rating and Reviews
+// @desc      Get all reviews
+// @route     GET /api/v1/reviews/getallreviews
+// @access    Public // VERIFIED
 const getAllRatingAndReviews = async (req, res) => {
   try {
     const allRatingAndReviews = await RatingAndReviews.find({})
@@ -133,13 +135,15 @@ const getAllRatingAndReviews = async (req, res) => {
       .populate({ path: "user", select: "firstName lastName email avatar" })
       .populate({ path: "course", select: "courseName" })
       .exec();
-    console.log(allRatingAndReviews);
+    console.log("All Rating and Reviews Response => ", allRatingAndReviews);
 
     // Return Response
     return res.status(200).json({
       message: "All Rating and reviews fetched successfully",
       success: true,
       status: 200,
+      data : allRatingAndReviews , 
+      count : allRatingAndReviews.length
     });
   } catch (error) {
     return res.status(500).json({
