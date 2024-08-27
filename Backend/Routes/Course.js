@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   createCourse,
   getAllPublishedCourses,
+  getCourse,
 } = require("../Controllers/Course");
 
 const {
@@ -34,7 +35,8 @@ const { auth, authorize } = require("../middlewares/Auth");
 
 // Course created by Instructor only
 router
-  .get("/", getAllPublishedCourses)
+  .route("/")
+  .get(getAllPublishedCourses)
   .post(auth, authorize("Instructor"), createCourse);
 
 // add a section to a course
@@ -49,6 +51,8 @@ router.post(
   authorize("Instructor"),
   createSubSection
 );
+
+router.get("/getcourse/:courseId", getCourse);
 
 router.post(
   "/updateSubSection",

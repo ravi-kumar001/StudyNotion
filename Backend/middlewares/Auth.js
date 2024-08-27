@@ -8,9 +8,7 @@ const auth = (req, res, next) => {
       req.body.token ||
       req.header("Authorization").replace("Bearer ", "") ||
       req.cookies.token; // const {token} = req.body;
-    console.log("Token of Authentication => ", token);
-    console.log("This is called");
-
+      
     // if token is missting
     if (!token) {
       res.status(400).json({
@@ -23,7 +21,6 @@ const auth = (req, res, next) => {
     // if token exist then verify first decode token in object form
     try {
       const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-      console.log("Decoded Token => ", decodedToken);
       req.user = decodedToken; // we create a user object with decodeToken value in req object  iska matlab hum apne req and res ko dusre middleware me aise bhej sakte hai
     } catch (error) {
       return res.json({
@@ -37,7 +34,7 @@ const auth = (req, res, next) => {
     console.error("Token verification error:", error);
     return res.status(500).json({
       message: "Something went wrong during token verification",
-      error: error,
+      error: `error in auth middleware => ${error}`,
     });
   }
 };

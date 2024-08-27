@@ -1,1 +1,27 @@
 try to chatGPT and if you have no log of error then try to log error of catch block
+2nd step for finding error we console call stack like console.error("Error occurred:", err.stack || err);  and we find which line our code is brust
+if our code is brust like create document then we also use try-catch
+always try if we write code of catch block then always make console.log(error) in development phase otherwise we will not find error fastly
+
+
+
+
+When you replaced Content-Type: multipart/form-data with Content-Type: application/json and it worked, it indicates that the issue was related to how the multipart/form-data format was being handled by your server.
+
+Why It Works with application/json:
+Simpler Parsing:application/json is the standard content type for sending JSON data in HTTP requests. When this content type is used, the data is sent as a JSON string in the request body, which Express.js can easily parse using its built-in express.json() middleware.
+
+
+Direct Mapping to req.body:With application/json, the data you send directly maps to req.body on the server. For example, if you send { sectionId: '66cdd5234c4a4632dee2f764' }, it arrives on the server as req.body = { sectionId: '66cdd5234c4a4632dee2f764' }.
+
+
+Issues with multipart/form-data:multipart/form-data is typically used when uploading files, as it splits the request body into parts, each with its own content type and content disposition. This requires more complex handling, and if the server isn't set up to properly handle multipart/form-data for a DELETE request, the data might not be parsed correctly.
+Additionally, when using multipart/form-data, the body is not a simple JSON object; it's a series of parts that need to be interpreted differently. If the server expects JSON but receives multipart/form-data, it may not know how to handle it correctly, leading to req.body being empty or incorrectly parsed.
+Summary:
+By using application/json, you are aligning with the expected content type for the data being sent, making it easier for your Express.js server to parse the body and handle the request correctly. This is why the DELETE request works as intended when you switch to application/json.
+
+
+
+
+
+

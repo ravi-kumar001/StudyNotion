@@ -127,7 +127,7 @@ const subSectionSchema = new mongoose.Schema({
 });
 
 const courseSchema = new mongoose.Schema({
-  courseName: {
+  title: {
     type: String,
     trim: true,
     required: true,
@@ -145,7 +145,7 @@ const courseSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  courseContent: [
+  sections: [
     {
       type: Schema.Types.ObjectId,
       ref: "Section",
@@ -170,6 +170,7 @@ const courseSchema = new mongoose.Schema({
   tags: {
     type: [String],
     required: true,
+    trim: true,
   },
   category: {
     type: Schema.Types.ObjectId,
@@ -183,10 +184,19 @@ const courseSchema = new mongoose.Schema({
     {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
-      default: [],
+      default: 0,
     },
   ],
+  averageRating: {
+    type: Number,
+    default: 0,
+  },
+  // timeDuration will be in seconds
+  totalDuration: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
   instructions: [String],
   status: {
     type: String,
@@ -196,12 +206,12 @@ const courseSchema = new mongoose.Schema({
 });
 
 const sectionSchema = new mongoose.Schema({
-  sectionName: {
+  title: {
     type: String,
     required: true,
     trim: true,
   },
-  subSection: [
+  subSections: [
     {
       type: Schema.Types.ObjectId,
       ref: "SubSection",
@@ -340,5 +350,5 @@ module.exports = {
   ratingAndReviewsSchema,
   categorySchema,
   otpSchema,
-  otherSchema
+  otherSchema,
 };

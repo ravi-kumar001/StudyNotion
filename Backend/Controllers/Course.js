@@ -2,6 +2,7 @@ const { Category } = require("../DB/Modals/Category");
 const { User } = require("../DB/Modals/User");
 const { Course } = require("../DB/Modals/Course");
 const { uploadFileToCloudinary } = require("../utils/imageUploader");
+const { data } = require("autoprefixer");
 
 // Create Course Handler function   hame ise category schema ke andar ref push karna hi
 // @desc      Create Course
@@ -10,22 +11,35 @@ const { uploadFileToCloudinary } = require("../utils/imageUploader");
 const createCourse = async (req, res) => {
   try {
     // Data fetch
-    const { courseName, description, whatYouWillLearn, price, tag } = req.body;
-    const thumbnail = req.files.thumbnail;
+    const instructorId = req.user.id;
+    const { title, description, whatYouWillLearn, price, category } = req.body;
+    const thumbnail = req.files?.thumbnail;
+    const tags = req.body?.tags ? req.body?.tags : null;
+    const instructions = req.body?.instructions
+      ? JSON.parse(req.body?.instructions)
+      : null;
 
     // validation on fetched data
-    if (!courseName || !description || !whatYouWillLearn || !price || !tag) {
+    if (
+      !title ||
+      !description ||
+      !whatYouWillLearn ||
+      !price ||
+      !tags ||
+      !category ||
+      !instructions
+    ) {
       return res.status(401).json({
         success: false,
         message: "All field required",
-        status: 401,
+        error: "All fields are mandatory",
       });
     }
 
     // Check for this user is instructor or not
     const userId = req.user.id;
     const instructorDetails = await User.findById(userId);
-    console.log("Instructor Details is here ", instructorDetails);
+    console.log("Instructor Details => ", instructorDetails);
 
     if (!instructorDetails) {
       return res.status(402).json({
@@ -35,60 +49,122 @@ const createCourse = async (req, res) => {
       });
     }
 
-    // check intructor'tag is valid or not
-    const validCategoryResponse = await Category.findById({ tag });
+    // check if category is a valid category
+    const validCategoryResponse = await Category.findById(category);
     if (!validCategoryResponse) {
       res.status(403).json({
         success: false,
-        message: "Tag is not found . Please try again later",
+        error: "No such category found",
+      });
+    }
+
+    // validate and upload thumbnail
+    if (thumbnail.size > process.env.THUMBNAIL_MAX_SIZE) {
+      return res.status(401).json({
+        success: false,
+        message: "Image Size issue",
+        error: `Please upload image less than ${
+          process.env.THUMBNAIL_MAX_SIZE / 1024
+        } KB`,
+        status: 401,
+      });
+    }
+
+    if (!thumbnail.mimetype.startsWith("image")) {
+      return res.status(402).json({
+        success: false,
+        message: "Please Provide image File",
+        status: 402,
+      });
+    }
+
+    const allowedType = ["jpeg", "jpg", "png"];
+    const thumbnailType = thumbnail.name.split(".")[1].toLowerCase();
+
+    if (!allowedType.includes(thumbnailType)) {
+      return res.status(403).json({
+        success: false,
+        message: "Please Provide valid image File",
         status: 403,
       });
     }
 
-    // thumbnail upload on cloudinary
-    const uploadedThumbnailResponse = await uploadFileToCloudinary(
-      thumbnail,
-      process.env.CLOUDINARY_FOLDER_NAME
-    );
-    console.log(uploadFileToCloudinary);
+    thumbnail.name = `thumbnail_${req.user.id}_${Date.now()}.${thumbnailType}`;
 
-    // Create an entry for new course
+    const thumbnailResponse = await uploadFileToCloudinary(
+      thumbnail,
+      `/${process.env.CLOUDINARY_FOLDER_NAME}/${process.env.THUMBNAIL_FOLDER_NAME}`,
+      100,
+      80
+    );
+    console.log("Thumbnail Response => ", thumbnailResponse);
+
+    // create course
     const createCourseResponse = await Course.create({
-      courseName,
+      title,
       description,
-      instructor: instructorDetails._id, // This line shows that we store user id in instructor field
-      price,
+      instructor: instructorId,
       whatYouWillLearn,
-      category: validCategoryResponse._id,
-      thumbnail: uploadedThumbnailResponse.secure_url,
+      price,
+      category,
+      instructions,
+      thumbnail: thumbnailResponse.secure_url,
+      tags,
     });
+    console.log("Create course Response => ", createCourseResponse);
 
     // add this course in user schema for current instructor i.e update user modal with this course id
-    const updatedUserResponse = await User.findByIdAndUpdate(
-      {
-        id: instructorDetails._id,
-      },
-      {
-        $push: {
-          courses: createCourseResponse._id,
+    try {
+      const updatedUserResponse = await User.findByIdAndUpdate(
+        instructorId,
+        {
+          $push: {
+            courses: createCourseResponse._id,
+          },
         },
+        { new: true } // this line used for give updated response i.e give updated document
+      );
+      console.log("Update User Response => ", updatedUserResponse);
+    } catch (error) {
+      console.log(error);
+    }
+
+    // update category
+    await Category.findByIdAndUpdate(
+      validCategoryResponse._id,
+      {
+        $push: { courses: createCourseResponse._id },
       },
-      { new: true } // this line used for give updated response i.e give updated document
+      { new: true }
     );
-    console.log("Update User Response => ", updatedUserResponse);
 
-    // update tag schema hw
+    const courseFullDetails = await Course.findById(createCourseResponse._id)
+      .populate({
+        path: "instructor",
+        populate: {
+          path: "profile",
+        },
+      })
+      .populate("category")
+      .populate("ratingAndReviews")
+      .populate({
+        path: "sections",
+        populate: {
+          path: "subSections",
+        },
+      })
+      .exec();
 
-    res.status(200).json({
-      status: 200,
+    return res.status(200).json({
       success: true,
-      message: "Course create successfully",
+      data: courseFullDetails,
+      message: "Course created successfully",
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
       status: 500,
-      message: "Something went wrong during creating course . Please try again",
+      error: "Something went wrong during creating course . Please try again",
     });
   }
 };
@@ -111,6 +187,44 @@ const getAllCourse = async (req, res) => {
       message: "Something went wrong during Fetching course . Please try again",
     });
   }
+};
+
+// @desc      Get single courses (Only published course)
+// @route     GET /api/v1/courses/getcourse/:courseId
+// @access    Public // VERIFIED
+const getCourse = async (req, res) => {
+  try {
+    const course = Course.findById(req.params.courseId)
+      .populate({
+        path: "instructor",
+        populate: {
+          path: "profile",
+        },
+      })
+      .populate("category")
+      .populate("ratingAndReviews")
+      .populate({
+        path: "sections",
+        populate: {
+          path: "subSections",
+          select: "videoUrl",
+        },
+      })
+      .exec();
+
+    if (!course || course.status == "Draft") {
+      return res.status(400).json({
+        success: false,
+        error: "No such course found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Course Get Successfully",
+      data: course,
+    });
+  } catch (error) {}
 };
 
 // Get Course Details Handler function
@@ -164,4 +278,4 @@ const getCourseDetails = async (req, res) => {
 
 const getAllPublishedCourses = async (req, res) => {};
 
-module.exports = { createCourse, getAllPublishedCourses };
+module.exports = { createCourse, getAllPublishedCourses, getCourse };
