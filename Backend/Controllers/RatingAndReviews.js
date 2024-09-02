@@ -142,8 +142,8 @@ const getAllRatingAndReviews = async (req, res) => {
       message: "All Rating and reviews fetched successfully",
       success: true,
       status: 200,
-      data : allRatingAndReviews , 
-      count : allRatingAndReviews.length
+      data: allRatingAndReviews,
+      count: allRatingAndReviews.length,
     });
   } catch (error) {
     return res.status(500).json({
@@ -155,4 +155,58 @@ const getAllRatingAndReviews = async (req, res) => {
   }
 };
 
-module.exports = { createRating, getAverageRating, getAllRatingAndReviews };
+// @desc      Get all reviews of a course
+// @route     POST /api/v1/reviews/getreviewsofcourse
+// @access    Public // VERIFIED
+const getReviewsOfCourse = async (req, res, next) => {
+  try {
+    const { courseId } = req.body;
+    if (!courseId) {
+      return res
+        .status(400)
+        .json({ message: "Invalid request", success: false });
+    }
+
+    const course = await Course.findById(courseId)
+      .populate({
+        path: "ratingAndReviews",
+        populate: {
+          path: "user",
+          select: "firstName lastName email avatar",
+        },
+      })
+      .populate({
+        path: "ratingAndReviews",
+        populate: {
+          path: "course",
+          select: "title _id",
+        },
+      });
+    console.log("Course Details => ", course);
+
+    if (!course) {
+      return res.json({
+        success: false,
+        message: "No such course found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      count: course.ratingAndReviews.length,
+      data: course.ratingAndReviews,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: "Failed to fetching Reviews. Please try again",
+      success: false,
+    });
+  }
+};
+
+module.exports = {
+  createRating,
+  getAverageRating,
+  getAllRatingAndReviews,
+  getReviewsOfCourse,
+};

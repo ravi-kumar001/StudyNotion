@@ -20,8 +20,8 @@ Additionally, when using multipart/form-data, the body is not a simple JSON obje
 Summary:
 By using application/json, you are aligning with the expected content type for the data being sent, making it easier for your Express.js server to parse the body and handle the request correctly. This is why the DELETE request works as intended when you switch to application/json.
 
+due to headers our controller function not accepth the req object;
 
-
-
+if an error occured in our application then make sure we have mistaked in epress js type error like router.route and many syntax error so always see express js syntax
 
 

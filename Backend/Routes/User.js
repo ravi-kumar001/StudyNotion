@@ -7,6 +7,7 @@ const {
   deleteCurrentUser,
   getUser,
   getUsers,
+  getInstructorDashboardData,
   getCreatedCourses,
 } = require("../Controllers/User");
 
@@ -32,5 +33,6 @@ router.get(
   authorize("Instructor"),
   getCreatedCourses
 );
+router.get('/getinstructordashboarddata', auth, authorize('Instructor'), getInstructorDashboardData);
 
 module.exports = router;

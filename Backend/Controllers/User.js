@@ -182,8 +182,53 @@ const deleteCurrentUser = async (req, res) => {
 // @desc      Get Instructor Dashboard data of a Instructor
 // @route     GET /api/v1/users/getinstructordashboarddata
 // @access    Private/Instructor
-const instructorDashboard = async (req, res) => {
+const getInstructorDashboardData = async (req, res) => {
   try {
+    const userId = req.user.id;
+    const user = await User.findById(userId)
+      .populate({
+        path: "courses",
+        match: { status: "Published" },
+      })
+      .exec();
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "No such user found",
+      });
+    }
+
+    let totalPublishedCourses = user.courses.length;
+    let totalStudents = 0;
+    let totalIncome = 0;
+
+    const coursesWithStats = user.courses.map((course) => {
+      let courseWithStats = {
+        course,
+        stats: {
+          totalStudents: course.numberOfEnrolledStudents,
+          totalIncome: course.price * course.numberOfEnrolledStudents,
+        },
+      };
+
+      totalStudents += courseWithStats.stats.totalStudents;
+      totalIncome += courseWithStats.stats.totalIncome;
+      return courseWithStats;
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        userId: user._id,
+        userFirstName: user.firstName,
+        totalPublishedCourses,
+        totalStudents,
+        totalIncome,
+        coursesWithStats,
+      },
+    });
+    
   } catch (error) {
     return res.status(500).json({
       status: 500,
@@ -268,7 +313,7 @@ module.exports = {
   currentUser,
   changeAvatar,
   deleteCurrentUser,
-  instructorDashboard,
+  getInstructorDashboardData,
   getUsers,
   getUser,
   getCreatedCourses,

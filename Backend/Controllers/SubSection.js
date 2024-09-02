@@ -1,16 +1,20 @@
 const { uploadFileToCloudinary } = require("../utils/imageUploader");
 const { SubSection } = require("../DB/Modals/SubSection");
 const { Section } = require("../DB/Modals/Section");
+const { Course } = require("../DB/Modals/Course");
 
-// Create SubSection
+// @desc      Create a subsection
+// @route     POST /api/v1/subsections
+// @access    Private/instructor // VERIFIED
 const createSubSection = async (req, res) => {
   try {
     // Fetch Data
-    const { sectionId, title, timeDuration, description } = req.body;
-    const video = req.files.videoFile;
+    const { title, timeDuration, description, sectionId } = req.body;
+    const userId = req.user.id;
+    const video = req?.files?.video;
 
     // Data validation
-    if (!sectionId || !title || !timeDuration || !description) {
+    if (!sectionId || !title || !timeDuration || !video) {
       return res.status(400).json({
         success: false,
         message: "All Fields are required",
@@ -18,35 +22,95 @@ const createSubSection = async (req, res) => {
       });
     }
 
-    // Upload video to cloudinary
-    const uploadedVideoResponse = await uploadFileToCloudinary(
-      video,
-      process.env.CLOUDINARY_FOLDER_NAME
-    );
-    console.log(uploadFileToCloudinary);
+    // check section is present or not
+    const sectionDetails = await Section.findById(sectionId);
+    if (!sectionDetails) {
+      return res.status(402).json({
+        success: false,
+        message: "No such section found",
+      });
+    }
 
-    // Create SubSection
-    const createSubSectionResponse = await SubSection.create({
+    if (sectionDetails.user.toString() != userId) {
+      return res.status(403).json({
+        success: false,
+        message: "User not authorized",
+      });
+    }
+
+    ///////////////////////* upload video **///////////////////////
+    if (video.size > process.env.VIDEO_MAX_SIZE) {
+      return res.status(403).json({
+        success: false,
+        message: "Video Size issue",
+        error: `Please upload video less than ${
+          process.env.VIDEO_MAX_SIZE / 1024
+        } KB`,
+      });
+    }
+
+    if (!video.mimetype.startsWith("video")) {
+      return res.status(404).json({
+        success: false,
+        message: "Please Provide video File",
+      });
+    }
+
+    const allowedType = ["mp4", "mkv"];
+    const videoType = video.name.split(".")[1].toLowerCase();
+
+    if (!allowedType.includes(videoType)) {
+      return res.status(405).json({
+        success: false,
+        message: "Please Provide valid video File",
+      });
+    }
+
+    video.name = `video${req.user.id}_${Date.now()}.${videoType}`;
+
+    const videoDetails = await uploadFileToCloudinary(
+      video,
+      `/${process.env.CLOUDINARY_FOLDER_NAME}/${process.env.VIDEO_FOLDER_NAME}`,
+      100,
+      80
+    );
+    console.log("VIDEO Details Response => ", videoDetails);
+    /////////////////////////// ***** ///////////////////////////////////
+
+    // create sub section
+    const subSection = await SubSection.create({
       title,
       timeDuration,
       description,
-      videoUrl: uploadedVideoResponse.secure_url,
+      section: sectionId,
+      user: userId,
+      videoUrl: videoDetails.secure_url,
     });
 
     // Update Section with this SubSection objectId
     const updatedSectionResponse = await Section.findByIdAndUpdate(
-      { sectionId },
-      { $push: { subSection: createSubSectionResponse._id } },
-      { new: true }
+      { _id: sectionId }, // we directly pass sectionId
+      { $push: { subSections: subSection._id } },
+      { new: true } 
     );
     console.log("Updated Section Response " + updatedSectionResponse); // hw log updated section here , after adding populate query
 
+    // update course - updated time duration of course
+    const updatedCourse = await Course.findByIdAndUpdate(
+      updatedSectionResponse.course,
+      {
+        $inc: { totalDuration: timeDuration },
+      },
+      { new: true }
+    );
+
     res.status(200).json({
-      status: 200,
       message: "SubSection Created Successfully",
       success: true,
+      data: subSection,
     });
   } catch (error) {
+    console.log("Some Error in Create Sub Section => ", error);
     return res.status(500).json({
       success: false,
       status: 500,
