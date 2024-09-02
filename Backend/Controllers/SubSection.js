@@ -91,7 +91,7 @@ const createSubSection = async (req, res) => {
     const updatedSectionResponse = await Section.findByIdAndUpdate(
       { _id: sectionId }, // we directly pass sectionId
       { $push: { subSections: subSection._id } },
-      { new: true } 
+      { new: true }
     );
     console.log("Updated Section Response " + updatedSectionResponse); // hw log updated section here , after adding populate query
 
@@ -120,11 +120,15 @@ const createSubSection = async (req, res) => {
   }
 };
 
-// Update SubSection hw
+// @desc      Update a subsection
+// @route     PUT /api/v1/subsections
+// @access    Private/instructor // VERIFIED
 const updateSubSection = async (req, res) => {
   try {
     // Data fetch
     const { title, timeDuration, description, subSectionId } = req.body;
+    console.log(title, timeDuration, description, subSectionId);
+    let videoUrl = null;
 
     // Data validation
     if (!subSectionId || !title || !timeDuration || !description) {
@@ -135,21 +139,95 @@ const updateSubSection = async (req, res) => {
       });
     }
 
+    const subSection = await SubSection.findById(subSectionId);
+
+    if (!subSection) {
+      return res.status(402).json({
+        success: false,
+        message: "No such SubSection found",
+      });
+    }
+
+    if (subSection.user.toString() != req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "User not authorized",
+      });
+    }
+
+    if (req.files && req.files.video) {
+      const video = req.files.video;
+
+      ///////////////////////* upload video **///////////////////////
+      if (video.size > process.env.VIDEO_MAX_SIZE) {
+        return res.status(403).json({
+          success: false,
+          message: "Video Size issue",
+          error: `Please upload video less than ${
+            process.env.VIDEO_MAX_SIZE / 1024
+          } KB`,
+        });
+      }
+
+      if (!video.mimetype.startsWith("video")) {
+        return res.status(404).json({
+          success: false,
+          message: "Please Provide video File",
+        });
+      }
+
+      const allowedType = ["mp4", "mkv"];
+      const videoType = video.name.split(".")[1].toLowerCase();
+
+      if (!allowedType.includes(videoType)) {
+        return res.status(405).json({
+          success: false,
+          message: "Please Provide valid video File",
+        });
+      }
+
+      video.name = `video${req.user.id}_${Date.now()}.${videoType}`;
+
+      const videoDetails = await uploadFileToCloudinary(
+        video,
+        `/${process.env.CLOUDINARY_FOLDER_NAME}/${process.env.VIDEO_FOLDER_NAME}`,
+        100,
+        80
+      );
+      console.log("VIDEO Details Response => ", videoDetails);
+
+      videoUrl = videoDetails.secure_url;
+      /////////////////////////// ***** ///////////////////////////////////
+    }
+
     const updateSubSectionResponse = await SubSection.findByIdAndUpdate(
       subSectionId,
       {
         title,
         timeDuration,
-        description, // Here somthing is missing we are not update video url video update karne ke liye phir se cloudinary ka logic likhan padega
+        description,
+        videoUrl, // Here somthing is missing we are not update video url video update karne ke liye phir se cloudinary ka logic likhan padega
       },
       { new: true }
     );
-    console.log(updateSubSectionResponse);
+
+    const updatedSection = await Section.findById(subSection.section).populate(
+      "subSections"
+    );
+
+    // update course - updated time duration of course
+    if (timeDuration) {
+      const updatedCourse = await Course.findByIdAndUpdate(
+        updatedSection.course,
+        { $inc: { totalDuration: timeDuration - subSection.timeDuration } },
+        { new: true }
+      );
+    }
 
     res.status(200).json({
       success: true,
       message: "Section update successfully",
-      status: 200,
+      data: updatedSection,
     });
   } catch (error) {
     return res.status(500).json({
@@ -161,22 +239,59 @@ const updateSubSection = async (req, res) => {
   }
 };
 
-// Delete SubSection hw
+// @desc      Delete a subsection
+// @route     DELETE /api/v1/subsections
+// @access    Private/instructor // VERIFIED
 const deleteSubSection = async (req, res) => {
   try {
-    // Get Section id
-    const { subSection } = req.params;
+    const subSectionId = req.body.subSectionId;
+    console.log("Sub Section Id", subSectionId);
+    const instructorId = req.user.id;
 
-    // Section deleted successfully
-    const deletedSubSectionResponse = await SubSection.findByIdAndDelete(
-      subSectionId
+    if (!subSectionId) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Some fields are missing" });
+    }
+
+    const subSection = await SubSection.findById(subSectionId);
+    if (!subSection) {
+      return res
+        .status(401)
+        .json({ success: false, error: "No such SubSection found" });
+    }
+
+    // only section creator (instructor) can update section
+    if (subSection.user.toString() !== instructorId) {
+      return res
+        .status(402)
+        .json({ success: false, error: "Unauthorized access" });
+    }
+
+    const updatedSection = await Section.findByIdAndUpdate(
+      subSection.section,
+      {
+        $pull: {
+          subSections: subSection._id,
+        },
+      },
+      { new: true }
+    ).populate("subSections");
+
+    // update course - updated time duration of course
+
+    const updatedCourse = await Course.findByIdAndUpdate(
+      updatedSection.course,
+      { $inc: { totalDuration:-subSection.timeDuration } },
+      { new: true }
     );
-    console.log(deletedSubSectionResponse);
+
+    subSection.deleteOne();
 
     res.status(200).json({
       message: "SubSection deleted Successfully",
       success: true,
-      status: 200,
+      data: updatedSection,
     });
   } catch (error) {
     return res.status(500).json({

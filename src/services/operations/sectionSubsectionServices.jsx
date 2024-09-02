@@ -114,7 +114,7 @@ export const deleteSubSection = async (formData, token) => {
   try {
     const response = await apiConnector('DELETE', subsectionApi.DELETE_DELETE_SUBSECTION_API,
       formData, {
-      'Content-Type': 'multipart/form-data',
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`
     });
 

@@ -79,6 +79,7 @@ const createSection = async (req, res) => {
 const updateSection = async (req, res) => {
   try {
     // Data fetch
+    const instructorId = req.user.id;
     const { title, sectionId } = req.body;
 
     // Data Validation
@@ -90,19 +91,46 @@ const updateSection = async (req, res) => {
       });
     }
 
+    const section = await Section.findById(sectionId);
+
+    if (!section) {
+      return res.status(401).json({
+        success: false,
+        message: "No Such Section found",
+      });
+    }
+
+    // only instructor of course can add section in course
+    if (section.user.toString() !== instructorId) {
+      return res.status(402).json({
+        success: false,
+        error: "User not authorized",
+      });
+    }
+
     const updateSectionResponse = await Section.findByIdAndUpdate(
       sectionId,
       {
         title,
       },
-      { new: true }
+      { runValidators: true, new: true }
     );
-    console.log(updateSectionResponse);
+
+    const updateCourseResponse = await Course.findByIdAndUpdate(section.course)
+      .populate("category")
+      .populate("ratingAndReviews")
+      .populate({
+        path: "sections",
+        populate: {
+          path: "subSections",
+        },
+      })
+      .exec();
 
     res.status(200).json({
+      data: updateCourseResponse,
       success: true,
       message: "Section update successfully",
-      status: 200,
     });
   } catch (error) {
     return res.status(500).json({
@@ -140,13 +168,7 @@ const deleteSection = async (req, res) => {
         .status(402)
         .json({ success: false, error: "Unauthorized access" });
     }
-
-    if (section.user.toString() !== req.user.id) {
-      return res
-        .status(403)
-        .json({ success: false, error: "User not authorized to do this task" });
-    }
-
+    
     // update course
     const updatedCourse = await Course.findByIdAndUpdate(
       section.course,
@@ -173,12 +195,10 @@ const deleteSection = async (req, res) => {
       data: updatedCourse,
     });
   } catch (err) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        error: "Failed to delete section. Please try again",
-      });
+    return res.status(500).json({
+      success: false,
+      error: "Failed to delete section. Please try again",
+    });
   }
 };
 
