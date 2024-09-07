@@ -22,7 +22,7 @@ const CourseCard = ({ course, imgHeight }) => {
 
             <RatingStars rating={course.averageRating} />
 
-            <p className='text-richblack-400' >{course.reviews.length} Ratings</p>
+            <p className='text-richblack-400' >{course.ratingAndReviews.length} Ratings</p>
           </div>
           <p className='text-xl text-richblack-5' >₹ {course.price}</p>
         </div>

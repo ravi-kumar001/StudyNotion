@@ -2,15 +2,23 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  createRating,
-  getAverageRating,
+  getAllReviews,
+  getReview,
   getReviewsOfCourse,
-  getAllRatingAndReviews,
+  createReview,
+  deleteReview
 } = require("../Controllers/RatingAndReviews");
+const { auth, authorize } = require("../middlewares/Auth");
 
-router.post('/getreviewsofcourse', getReviewsOfCourse);
-router.get("/getallreviews", getAllRatingAndReviews);
-router.post("/create-rating", createRating);
-router.get("/average-rating", getAverageRating);
+router.get("/getallreviews", getAllReviews);
+router.post("/getreview", getReview);
+router.post("/getreviewsofcourse", getReviewsOfCourse);
+router.post("/createreview", auth, authorize("Student"), createReview);
+router.delete(
+  "/deletereview",
+  auth,
+  authorize("Student", "Admin"),
+  deleteReview
+);
 
 module.exports = router;

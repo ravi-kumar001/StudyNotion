@@ -4,6 +4,7 @@ const { Course } = require("../DB/Modals/Course");
 const { uploadFileToCloudinary } = require("../utils/imageUploader");
 const { Section } = require("../DB/Modals/Section");
 const { SubSection } = require("../DB/Modals/SubSection");
+const { CourseProgress } = require("../DB/Modals/CourseProgress");
 
 // Create Course Handler function   hame ise category schema ke andar ref push karna hi
 // @desc      Create Course
@@ -395,7 +396,7 @@ const getAllCourse = async (req, res) => {
 // @access    Public // VERIFIED
 const getCourse = async (req, res) => {
   try {
-    const course = Course.findById(req.params.courseId)
+    const course = await Course.findById(req.params.courseId)
       .populate({
         path: "instructor",
         populate: {
@@ -408,12 +409,14 @@ const getCourse = async (req, res) => {
         path: "sections",
         populate: {
           path: "subSections",
-          select: "videoUrl",
+          select: "-videoUrl",
         },
       })
       .exec();
 
-    if (!course || course.status == "Draft") {
+    console.log("Course Details fetched", course);
+
+    if (!course || course.status === "Draft") {
       return res.status(400).json({
         success: false,
         error: "No such course found",
@@ -434,7 +437,28 @@ const getCourse = async (req, res) => {
   }
 };
 
-const getAllPublishedCourses = async (req, res) => {};
+// @desc      Get all published courses
+// @route     GET /api/v1/courses
+// @access    Public
+const getAllPublishedCourses = async (req, res) => {
+  try {
+    const courses = await Course.find({ status: "Published" })
+      .populate("instructor")
+      .populate("category")
+      .exec();
+
+    return res.status(200).json({
+      success: true,
+      count: courses.length,
+      data: courses,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch all published courses",
+    });
+  }
+};
 
 // @desc      Delete Course - Course can be delete only if no students is enrolled
 // @route     DELETE /api/v1/courses/deletecourse
@@ -485,7 +509,7 @@ const deleteCourse = async (req, res) => {
       for (const subSectionId of subSections) {
         await SubSection.findByIdAndDelete(subSectionId);
       }
-      
+
       await Section.findByIdAndDelete(sectionsId);
     }
     // Delete the course
@@ -505,11 +529,96 @@ const deleteCourse = async (req, res) => {
   }
 };
 
+// @desc      Fetch course data, in which user is enrolled
+// @route     POST /api/v1/courses/getenrolledcoursedata
+// @access    Private/student
+const getEnrolledCourseData = async (req, res) => {
+  try {
+    // Only User who is enrolled in this course can get course data
+    const { courseId } = req.body;
+    const userId = req.user.id;
+
+    if (!courseId) {
+      return res.status(400).json({
+        error: "Invalid request",
+        success: false,
+      });
+    }
+
+    const course = await Course.findOne({
+      _id: courseId,
+      status: "Published",
+    })
+      .populate({
+        path: "instructor",
+        populate: {
+          path: "profile",
+        },
+      })
+      .populate("category")
+      .populate("ratingAndReviews")
+      .populate({
+        path: "sections",
+        populate: {
+          path: "subSections",
+        },
+      })
+      .exec();
+
+    if (!course) {
+      return res.status(401).json({
+        error: "No such course found",
+        success: false,
+      });
+    }
+
+    if (!course.studentsEnrolled.includes(userId)) {
+      return res.status(402).json({
+        error: "Student is not enrolled in Course",
+        success: false,
+      });
+    }
+
+    const courseProgress = await CourseProgress.findOne({
+      courseId,
+      userId,
+    });
+
+    if (!courseProgress) {
+      return res.status(404).json({
+        error: "No such course progress found",
+        success: false,
+      });
+    }
+
+    let totalNoOfVideos = 0;
+    for (let section of course.sections) {
+      totalNoOfVideos += section.subSections.length;
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        course,
+        completedVideos: courseProgress.completedVideos,
+        totalNoOfVideos,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch enrolled course data",
+      message: "Something went wrong during delete Course",
+    });
+  }
+};
+
 module.exports = {
   createCourse,
-  getAllPublishedCourses,
   getCourse,
   editCourse,
   getFullCourseDetails,
   deleteCourse,
+  getAllPublishedCourses,
+  getEnrolledCourseData,
 };

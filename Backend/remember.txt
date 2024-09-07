@@ -25,3 +25,15 @@ due to headers our controller function not accepth the req object;
 if an error occured in our application then make sure we have mistaked in epress js type error like router.route and many syntax error so always see express js syntax
 
 
+select: "-videoUrl"   =>  The "-" (minus sign) before the field name (videoUrl) indicates that you are excluding the videoUrl field from the fetched subSections documents.
+This means that when you fetch the subSections, the videoUrl field will not be included in the result. Only other fields (if any) from subSections will be returned.
+
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
+when i use Schema.Types.ObjectId then const { Schema } = mongoose; this is required otherwise we will go for this line type: mongoose.schema.Types.ObjectId,
+ profile: {
+    type: Schema.Types.ObjectId,
+    ref: "Profile",
+  },
+
+const userSchema = new mongoose.Schema({})  => here not required const { Schema } = mongoose; because we directly find Schema from mongoose

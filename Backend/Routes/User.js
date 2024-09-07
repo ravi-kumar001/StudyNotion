@@ -9,6 +9,7 @@ const {
   getUsers,
   getInstructorDashboardData,
   getCreatedCourses,
+  getEnrolledCourses
 } = require("../Controllers/User");
 
 router.get("/", auth, authorize("Admin"), getUsers);
@@ -34,5 +35,6 @@ router.get(
   getCreatedCourses
 );
 router.get('/getinstructordashboarddata', auth, authorize('Instructor'), getInstructorDashboardData);
+router.get('/getenrolledcourses', auth, authorize('Student'), getEnrolledCourses);
 
 module.exports = router;

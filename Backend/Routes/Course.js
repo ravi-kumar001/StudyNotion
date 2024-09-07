@@ -3,11 +3,12 @@ const router = express.Router();
 
 const {
   createCourse,
-  getAllPublishedCourses,
+  getEnrolledCourseData,
   getCourse,
   editCourse,
   deleteCourse,
   getFullCourseDetails,
+  getAllPublishedCourses
 } = require("../Controllers/Course");
 
 const { auth, authorize } = require("../middlewares/Auth");
@@ -27,5 +28,11 @@ router.post(
 );
 router.delete("/deletecourse", auth, authorize("Instructor"), deleteCourse);
 router.get("/getcourse/:courseId", getCourse);
+router.post(
+  "/getenrolledcoursedata",
+  auth,
+  authorize("Student"),
+  getEnrolledCourseData
+);
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const { Profile } = require("../DB/Modals/Profile");
 const { User } = require("../DB/Modals/User");
+const { CourseProgress } = require("../DB/Modals/CourseProgress");
 const deleteAccoutTemplate = require("../mail/templates/deleteAccoutTemplate");
 const { uploadFileToCloudinary } = require("../utils/imageUploader");
 const { mailSender } = require("../utils/mailSender");
@@ -228,7 +229,6 @@ const getInstructorDashboardData = async (req, res) => {
         coursesWithStats,
       },
     });
-    
   } catch (error) {
     return res.status(500).json({
       status: 500,
@@ -309,6 +309,64 @@ const getCreatedCourses = async (req, res) => {
   }
 };
 
+// @desc      Get all enrolled courses of a student
+// @route     GET /api/v1/users/getenrolledcourses
+// @access    Private/Student
+const getEnrolledCourses = async (req, res) => {
+  try {
+    let user = await User.findById(req.user.id)
+      .populate({
+        path: "courses",
+        populate: {
+          path: "sections",
+          populate: {
+            path: "subSections",
+          },
+        },
+      })
+      .exec();
+
+    user = user.toObject();
+
+    // set totalDuration of each  course
+    for (let i = 0; i < user.courses.length; i++) {
+      let totalDurationInSeconds = parseInt(user.courses[i].totalDuration);
+      user.courses[i].duration = secToDuration(totalDurationInSeconds);
+
+      let subsectionCount = 0;
+      for (let j = 0; j < user.courses[i].sections.length; j++) {
+        subsectionCount += user.courses[i].sections[j].subSections.length;
+      }
+
+      const courseProgress = await CourseProgress.findOne({
+        courseId: user.courses[i]._id,
+        userId: user._id,
+      });
+
+      const courseProgressCount = courseProgress.completedVideos.length;
+      let progressPercentage = 100;
+      if (subsectionCount !== 0) {
+        progressPercentage =
+          Math.round((courseProgressCount / subsectionCount) * 100 * 100) / 100;
+      }
+
+      user.courses[i].progressPercentage = progressPercentage;
+    }
+
+    res.status(200).json({
+      success: true,
+      count: user.courses.length,
+      data: user.courses,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(200).json({
+      success: false,
+      message: "Failed to fetch all courses",
+    });
+  }
+};
+
 module.exports = {
   currentUser,
   changeAvatar,
@@ -317,4 +375,5 @@ module.exports = {
   getUsers,
   getUser,
   getCreatedCourses,
+  getEnrolledCourses,
 };

@@ -207,7 +207,7 @@ const CourseDetails = () => {
 
                       <RatingStars rating={courseData.averageRating} starSize={24} />
 
-                      <p className='text-richblack-200' >( {courseData.reviews.length} ratings ) </p>
+                      <p className='text-richblack-200' >( {courseData.ratingAndReviews.length} ratings ) </p>
                       <p className='text-richblack-200' >{courseData.numberOfEnrolledStudents} students</p>
                     </div>
 
