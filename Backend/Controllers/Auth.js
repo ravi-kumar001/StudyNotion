@@ -495,7 +495,7 @@ const resetPasswordToken = async (res, email, user) => {
         user.email,
         `Password reset for ${user.firstName} ${user.lastName}`,
         `You are receiving this email because you (or someone else) has requested the reset of your Study Notion account password. 
-        Please click below to reset your password : \n\n ${resetUrl}
+        Please click below to reset your password : \n\n <a href="${resetUrl}" target="_blank" style="color: blue; text-decoration: underline;">Reset your password</a>
         `
       );
       console.log("Mail Response => ", mailResponse);
