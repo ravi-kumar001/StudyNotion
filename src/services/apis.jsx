@@ -46,11 +46,11 @@ export const otherApi = {
 
 // PAYMENT API
 export const paymentApi = {
-  POST_CREATE_ORDER_API: BASE_URL + "/payments/createorder",
-  POST_VERIFY_PAYMENT_SIGNATURE_API:
-    BASE_URL + "/payments/verifypaymentsignature",
-  POST_SEND_PAYMENT_SUCCESS_EMAIL_API:
-    BASE_URL + "/payments/sendpaymentsuccessemail",
+  POST_CREATE_ORDER_API: BASE_URL + "/payments/verifypaymentsignature",
+  // POST_VERIFY_PAYMENT_SIGNATURE_API:
+  //   BASE_URL + "/payments/verifypaymentsignature",
+  // POST_SEND_PAYMENT_SUCCESS_EMAIL_API:
+  //   BASE_URL + "/payments/sendpaymentsuccessemail",
 };
 
 // PROFILE API

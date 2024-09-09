@@ -41,12 +41,10 @@ export const signUp = async (signUpData, dispatch, navigate) => {
 
     toast.success("SignUp Successful");
     dispatch(setToken(response.data.token));
-    // console.log("token response", response.data.token);
     dispatch(setUser(response.data.user));
     localStorage.setItem("token", JSON.stringify(response.data.token));
     navigate("/dashboard/my-profile");
   } catch (error) {
-    // toast.error('Login Failed');
     toast.error(error?.response?.data?.error || "SignUp Failed");
     navigate("/signup");
   }

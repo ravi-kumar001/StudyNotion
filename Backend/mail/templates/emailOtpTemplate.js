@@ -86,7 +86,7 @@ const emailOtpTemplate = (otp) => {
 
       <!-- Footer -->
       <div class="support">
-        <p>If you have any questions or need assistance, please feel free to reach out to us at <a href="https://1flix.to/home">moviesguruji73529+info@gmail.com</a>. We are here to help!</p>
+        <p>If you have any questions or need assistance, please feel free to reach out to us at <a href="https://1flix.to/home">ravikumar952310@gmail.com</a>. We are here to help!</p>
       </div>
     </div>
   </body>

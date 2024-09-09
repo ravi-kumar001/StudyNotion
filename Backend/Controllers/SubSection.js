@@ -39,7 +39,7 @@ const createSubSection = async (req, res) => {
     }
 
     ///////////////////////* upload video **///////////////////////
-    if (video.size > process.env.VIDEO_MAX_SIZE) {
+    if (video.size > process.env.LECTURES_MAX_SIZE) {
       return res.status(403).json({
         success: false,
         message: "Video Size issue",
@@ -70,7 +70,7 @@ const createSubSection = async (req, res) => {
 
     const videoDetails = await uploadFileToCloudinary(
       video,
-      `/${process.env.CLOUDINARY_FOLDER_NAME}/${process.env.VIDEO_FOLDER_NAME}`,
+      `/${process.env.CLOUDINARY_FOLDER_NAME}/${process.env.LECTURES_FOLDER_NAME}`,
       100,
       80
     );

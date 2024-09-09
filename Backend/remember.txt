@@ -37,3 +37,6 @@ when i use Schema.Types.ObjectId then const { Schema } = mongoose; this is requi
   },
 
 const userSchema = new mongoose.Schema({})  => here not required const { Schema } = mongoose; because we directly find Schema from mongoose
+
+
+ Cannot set headers after they are sent to the client ka matlab we not send proper response through this controller

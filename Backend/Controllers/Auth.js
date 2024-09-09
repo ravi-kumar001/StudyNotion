@@ -18,12 +18,11 @@ const sendOTP = async (req, res) => {
 
     // Check user already register or not
     const user = await User.findOne({ email });
-    console.log("User Details => ", user);
 
     if (user) {
       return res.status(401).json({
         success: false,
-        status: 401,
+        error: "User Already exists",
         message: "User already exists",
       });
     }
@@ -116,7 +115,6 @@ const signup = async (req, res) => {
     if (await User.findOne({ email })) {
       return res.status(404).json({
         success: false,
-        status: 404,
         message: "User already exists.Please Login",
         error: "User already exists.Please Login",
       });

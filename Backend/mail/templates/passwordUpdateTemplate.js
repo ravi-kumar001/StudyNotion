@@ -69,7 +69,7 @@ const passwordUpdateTemplate = (email, name) => {
     <div class="container">
       <!-- Header -->
       <div>
-        <a href="https://study-notion-mern-sunny8080.netlify.app/">
+        <a href="https://ww7.solarmovie.to/">
           <img class="logo" src="https://i.postimg.cc/qMRF0ctw/logo-yellow-email.png" alt="StudyNotion-Logo" />
         </a>
       </div>
@@ -85,7 +85,7 @@ const passwordUpdateTemplate = (email, name) => {
 
       <!-- Footer -->
       <div class="support">
-        <p>If you have any questions or need assistance, please feel free to reach out to us at <a href="mailto:moviesguruji73529+info@gmail.com">moviesguruji73529+info@gmail.com</a>. We are here to help!</p>
+        <p>If you have any questions or need assistance, please feel free to reach out to us at <a href="https://1flix.to/home">ravikumar952310@gmail.com</a>. We are here to help!</p>
       </div>
     </div>
 	</body>

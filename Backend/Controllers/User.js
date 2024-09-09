@@ -4,6 +4,7 @@ const { CourseProgress } = require("../DB/Modals/CourseProgress");
 const deleteAccoutTemplate = require("../mail/templates/deleteAccoutTemplate");
 const { uploadFileToCloudinary } = require("../utils/imageUploader");
 const { mailSender } = require("../utils/mailSender");
+const { secToDuration } = require("../utils/secToDuration");
 require("dotenv").config();
 
 // @desc      Get current user
@@ -352,6 +353,7 @@ const getEnrolledCourses = async (req, res) => {
 
       user.courses[i].progressPercentage = progressPercentage;
     }
+
 
     res.status(200).json({
       success: true,

@@ -9,31 +9,27 @@ const { mongoose } = require("mongoose");
 const createReview = async (req, res) => {
   try {
     // Fetch User Id
-    const { userId } = req.user.id;
+    const userId = req.user.id;
 
     // Fetch Rating and reviews
     const { rating, review, courseId } = req.body;
 
     if (!(rating && review && courseId)) {
-      return res.status(400).jso({
+      return res.status(400).json({
         message: "Some Fields are required",
         success: false,
       });
     }
 
-    // check if user is enrolled or not
+    // Check if user is enrolled or not
     const enrolledOrNotResponse = await Course.findOne({
       _id: courseId,
       studentsEnrolled: {
-        $elMatch: {
+        $elemMatch: {
           $eq: userId,
         },
       },
     });
-    console.log(
-      "EnrolledOrNot Response during of create Review ",
-      enrolledOrNotResponse
-    );
 
     // Validation on enrolledOrNotResponse
     if (!enrolledOrNotResponse) {
@@ -50,7 +46,7 @@ const createReview = async (req, res) => {
     });
 
     if (alreadyReviewedResponse) {
-      return res.status(402).json({
+      return res.status(409).json({
         message: "Course is already reviewed by the student",
         success: false,
       });
@@ -63,14 +59,10 @@ const createReview = async (req, res) => {
       user: userId,
       course: courseId,
     });
-    console.log(
-      "Created Rating and Reviews Response ",
-      createRatingAndReviewsResponse
-    );
 
     // Update course schema with this rating and reviews
     const updatedCourseResponse = await Course.findByIdAndUpdate(
-      { _id: courseId },
+      courseId,
       {
         $push: {
           ratingAndReviews: createRatingAndReviewsResponse._id,
@@ -80,8 +72,7 @@ const createReview = async (req, res) => {
     );
 
     // Update user schema with this rating and reviews
-
-    await User.findOneAndUpdate(
+    await User.findByIdAndUpdate(
       userId,
       {
         $push: {
@@ -89,10 +80,6 @@ const createReview = async (req, res) => {
         },
       },
       { new: true }
-    );
-    console.log(
-      "Updated Course Response of Create Rating and Review ",
-      updatedCourseResponse
     );
 
     // Return response
@@ -104,12 +91,12 @@ const createReview = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      status: 500,
       message:
-        "Something went wrong during create rating and reviews . Please try again",
+        "Failed to create rating and reviews.Please try again",
     });
   }
 };
+
 
 // Get Average Rating
 const getAverageRating = async (req, res) => {
