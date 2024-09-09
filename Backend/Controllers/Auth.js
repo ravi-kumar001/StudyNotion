@@ -5,12 +5,15 @@ const otpGenerator = require("otp-generator");
 const bcrypt = require("bcryptjs");
 const { mailSender } = require("../utils/mailSender");
 const passwordUpdateTemplate = require("../mail/templates/passwordUpdateTemplate");
+const adminCreatedTemplate = require("../mail/templates/adminCreatedTemplate");
 const accountCreationTemplate = require("../mail/templates/accountCreationTemplate");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
-// sendOTP
+// @desc      Send OTP for email verification
+// @route     POST /api/v1/auth/sendotp
+// @access    Public // VERIFIED
 const sendOTP = async (req, res) => {
   try {
     // Fetch Data
@@ -68,7 +71,9 @@ const sendOTP = async (req, res) => {
   }
 };
 
-// register
+// @desc      SignUp a user
+// @route     POST /api/v1/auth/signup
+// @access    Public // VERIFIED
 const signup = async (req, res) => {
   try {
     const {
@@ -199,7 +204,9 @@ const signup = async (req, res) => {
   }
 };
 
-// Login
+// @desc      Login user
+// @route     POST /api/v1/auth/login
+// @access    Public  // VERIFIED
 const login = async (req, res) => {
   try {
     // fetch data
@@ -207,8 +214,7 @@ const login = async (req, res) => {
 
     // Validate data
     if (!email || !password) {
-      res.status(407).json({
-        status: 407,
+      res.status(401).json({
         success: false,
         message: "All Fields are required",
       });
@@ -217,10 +223,9 @@ const login = async (req, res) => {
     // check user exists or not
     let user = await User.findOne({ email }).populate("profile");
     if (!user) {
-      res.json({
-        status: 402,
+      return res.status(402).json({
         success: false,
-        message: "User can't register . Please register first",
+        error: "User can't register.Please Sign In first",
       });
     }
 
@@ -270,6 +275,9 @@ const login = async (req, res) => {
   }
 };
 
+// @desc      Logout current user / cleat cookie
+// @route     POST /api/v1/auth/logout
+// @access    Private  // VERIFIED
 const logout = async (req, res) => {
   try {
     res
@@ -286,6 +294,86 @@ const logout = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to LogOut.",
+    });
+  }
+};
+
+// @desc      Get current logged in user
+// @route     GET /api/v1/auth/getme
+// @access    Private  // VERIFIED
+const getMe = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      error: "Failed to fetching current user details. Please try again",
+    });
+  }
+};
+
+// @desc      Create Admin
+// @route     POST /api/v1/auth/createadmin
+// @access    Private/SiteOwner // VERIFIED
+const createAdmin = async (req, res, next) => {
+  try {
+    const { firstName, lastName, email, password, contactNumber } = req.body;
+    const role = "Admin";
+
+    if (
+      !(firstName && lastName && email && password && role && contactNumber)
+    ) {
+      return res.status(400).json({
+        error: "Some fields are missing",
+        success: false,
+      });
+    }
+
+    // check if user already exists
+    if (await User.findOne({ email })) {
+      return res.status(401).json({
+        error: "User already exist. Please sign in to continue",
+        success: false,
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // LATER  - what is approved
+    let approved = role === "Instructor" ? false : true;
+
+    const profile = await Profile.create({ contactNumber });
+
+    const user = await User.create({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      role,
+      approved,
+      profile: profile._id,
+      avatar: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}%20${lastName}`,
+    });
+
+    // send a notification to user for account creation
+    await mailSender(
+      email,
+      `Admin account created successfully for ${firstName} ${lastName}`,
+      adminCreatedTemplate(firstName + " " + lastName)
+    );
+
+    res.status(201).json({
+      success: true,
+      data: "Admin account created successfully",
+    });
+  } catch (err) {
+    return res.status(500).json({
+      error: "Failed to create admin, Please try again",
+      success: false,
     });
   }
 };
@@ -355,36 +443,41 @@ const changePassword = async (req, res) => {
 // @route     POST /api/v1/auth/forgotpassword
 // @access    Public  // VERIFIED
 const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  // Validation
+  if (!email) {
+    return res.status(401).json({
+      message: "Input Fields are Missing",
+      success: false,
+      status: 401,
+    });
+  }
+
+  // Check for user is exist
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({
+      success: false,
+      error: "User is not register.Please Register first",
+      status: 400,
+    });
+  }
+
+  // Generate Reset Password Token
+  await resetPasswordToken(res, email, user);
+};
+
+// First create ResetToken
+const resetPasswordToken = async (res, email, user) => {
   try {
-    const { email } = req.body;
-
-    // Validation
-    if (!email) {
-      return res.status(401).json({
-        message: "Input Fields are Missing",
-        success: false,
-        status: 401,
-      });
-    }
-
-    // Check for user is exist
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "User is not register.Please register first",
-        error: "User is not register.Please Register first",
-        status: 400,
-      });
-    }
-
     const resetToken = crypto.randomBytes(20).toString("hex");
-    console.log("Reset Token => ", resetToken);
+
     const hashedToken = crypto
       .createHash("sha256")
       .update(resetToken)
       .digest("hex");
-    console.log("Hashed Token => ", hashedToken);
+
     await User.findOneAndUpdate(
       { email },
       {
@@ -410,7 +503,6 @@ const forgotPassword = async (req, res) => {
       return res.status(500).json({
         error,
         success: false,
-        status: 500,
         message:
           "Something went wrong during sent email during forget password",
       });
@@ -420,47 +512,133 @@ const forgotPassword = async (req, res) => {
       message:
         "Reset email sent successfully. Please check your email to reset password",
       success: true,
-      status: 200,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Something went wrong during forgot password",
       error: "Something went wrong during forgot password",
     });
   }
 };
 
+// @desc      Reset Password
+// @route     PUT /api/v1/auth/resetpassword
+// @access    Public  // VERIFIED
+const resetPassword = async (req, res) => {
+  try {
+    const { resetToken, password } = req.body;
+
+    // validation on resetToken and password
+    if (!(resetToken && password)) {
+      return res.status(401).json({
+        status: 401,
+        message: "Some Fields Are Missing",
+        success: false,
+      });
+    }
+
+    // Get userDetails from db using token first Hash the token
+    const resetPasswordToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+    const userDetails = await User.findOne({ resetPasswordToken });
+    // If no entry then token is invalid
+    if (!userDetails) {
+      return res.status(402).json({
+        status: 402,
+        message: "Token is invalid",
+        success: false,
+      });
+    }
+
+    // Token time check
+    if (userDetails.tokenExpires < Date.now()) {
+      return res.status(403).json({
+        status: 403,
+        message: "Token is expires . Please regenerate your token",
+        success: false,
+      });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log("Hashed Password => ", hashedPassword);
+
+    // now Password update
+    const updateResponse = await User.findOneAndUpdate(
+      userDetails._id,
+      {
+        password: hashedPassword,
+        resetPasswordExpire: undefined,
+        resetPasswordToken: undefined,
+      },
+      { new: true } // this line give new updated values in which token and resetPasswordExpires exists otherwise this give old value in which this two value missing
+    );
+    console.log("User Update Response => ", updateResponse);
+
+    // Sent mail for reset password
+
+    try {
+      const mailResponse = await mailSender(
+        userDetails.email,
+        `Password has been reset successfully for ${userDetails.firstName} ${userDetails.lastName}`,
+        `Your password has been reset successfully. Thanks for being with us.
+        To visit our site : ${process.env.STUDY_NOTION_FRONTEND_SITE}
+        `
+      );
+      console.log("Mail Response", mailResponse);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Something went wrong during reset password mail sending",
+      });
+    }
+
+    sendTokenResponse(res, userDetails, 200);
+
+    // Return Response
+    return res.status(200).json({
+      message: "Password reset Successfully",
+      success: true,
+      status: 200,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      status: 500,
+      message:
+        "Something went wrong during reset your password . Please try again",
+    });
+  }
+};
+
 // Function to send token in cookies  // VERIFIED
-const sendTokenResponse = (res, user, statusCode) => {
+const sendTokenResponse = (res, userDetails, statusCode) => {
   const token = jwt.sign(
     {
-      id: user._id,
-      email: user.email,
-      role: user.role,
+      id: userDetails._id,
+      email: userDetails.email,
+      role: userDetails.role,
     },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRE }
+    { expiresIn: process.env.JWT_COOKIE_EXPIRE }
   );
 
   const options = {
-    expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+    ),
     httpOnly: true,
   };
 
-  // if (process.env.NODE_ENV === "production") {
-  //   options.secure = true;
-  // }
+  if (process.env.NODE_ENV === "production") {
+    options.secure = true;
+  }
 
-  // Setting custom headers
-  res.set("X-Custom-Header", "CustomValue");
-  res.set("X-Powered-By", "Express");
-
-  return res.cookie("token", token, options).status(statusCode).json({
+  res.cookie("token", token, options).status(statusCode).json({
     success: true,
-    user,
+    userDetails,
     token,
-    message: "User Created Successfully",
   });
 };
 
@@ -471,4 +649,7 @@ module.exports = {
   logout,
   changePassword,
   forgotPassword,
+  resetPassword,
+  getMe,
+  createAdmin,
 };

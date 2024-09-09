@@ -91,12 +91,10 @@ const createReview = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message:
-        "Failed to create rating and reviews.Please try again",
+      message: "Failed to create rating and reviews.Please try again",
     });
   }
 };
-
 
 // Get Average Rating
 const getAverageRating = async (req, res) => {
@@ -320,7 +318,12 @@ const getReview = async (req, res) => {
       data: review,
       success: true,
     });
-  } catch (error) {}
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetching Review. Please try again",
+    });
+  }
 };
 
 module.exports = {

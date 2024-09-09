@@ -29,6 +29,41 @@ const ratingAndReviewsSchema = new mongoose.Schema({
   },
 });
 
+reviewSchema.statics.getAverageRating = async function (courseId) {
+  console.log(this);
+  try {
+    const obj = await this.aggregate([
+      {
+        $match: { course: courseId },
+      },
+      {
+        $group: {
+          _id: '$course',
+          averageRating: { $avg: '$rating' },
+        },
+      },
+    ]);
+
+    try {
+      await this.model('Course').findByIdAndUpdate(courseId, {
+        averageRating: obj.length ? Math.round(obj[0].averageRating * 10) / 10 : 0,
+      });
+    } catch (err) {
+      throw err;
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+reviewSchema.post('save', async function (doc) {
+  await this.constructor.getAverageRating(this.course);
+});
+
+reviewSchema.post('deleteOne', { document: true, query: false }, async function (next) {
+  await this.constructor.getAverageRating(this.course);
+});
+
 const RatingAndReviews = mongoose.model(
   "RatingAndReviews",
   ratingAndReviewsSchema

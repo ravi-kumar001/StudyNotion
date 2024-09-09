@@ -6,20 +6,21 @@ const {
   logout,
   forgotPassword,
   signup,
-} = require("../Controllers/Auth");
-const {
   resetPassword,
-  resetPasswordToken,
-} = require("../Controllers/ResetPassword");
-const { auth } = require("../middlewares/Auth");
+  getMe,
+  createAdmin
+} = require("../Controllers/Auth");
+const { auth, adminAuthorization } = require("../middlewares/Auth");
 const router = express.Router();
 
 router.post("/signup", signup);
 router.post("/login", login);
 router.post("/sendotp", sendOTP);
-router.post("/logout",logout);
+router.post("/logout", logout);
+router.get("/getme", auth, getMe);
 router.put("/changepassword", auth, changePassword);
-router.post('/forgotpassword', forgotPassword);
-router.put('/resetpassword', resetPassword);
+router.post("/forgotpassword", forgotPassword);
+router.put("/resetpassword", resetPassword);
+router.post("/createadmin", auth, adminAuthorization, createAdmin);
 
 module.exports = router;
