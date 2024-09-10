@@ -27,7 +27,6 @@ router.delete(
   authorize("Student", "Instructor"),
   deleteCurrentUser
 );
-
 router.get(
   "/getcreatedcourses",
   auth,

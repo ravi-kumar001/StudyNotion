@@ -39,7 +39,6 @@ const createSection = async (req, res) => {
       user: req.user.id,
       course: courseDetails._id,
     });
-    console.log("Created Section Response => ", createSectionResponse);
 
     // Update Course with section objectId
     const updatedCourseResponse = await Course.findByIdAndUpdate(
@@ -56,7 +55,6 @@ const createSection = async (req, res) => {
         },
       })
       .exec();
-    console.log("Updated Course Response", updatedCourseResponse);
 
     return res.status(200).json({
       success: true,

@@ -1,7 +1,7 @@
 const express = require("express");
+const router = express.Router();
 const { auth, authorize } = require("../middlewares/Auth");
 const { markSubSectionAsCompleted } = require("../Controllers/CourseProgress");
-const router = express.Router();
 
 router.post(
   "/marksubsectionascompleted",

@@ -36,7 +36,6 @@ const sendOTP = async (req, res) => {
       lowerCaseAlphabets: false,
       specialChars: false,
     });
-    console.log("Our otp => ", otp);
 
     // Check otp unique or not
     const result = await OTP.findOne({ otp });
@@ -54,7 +53,6 @@ const sendOTP = async (req, res) => {
       email,
       otp,
     });
-    console.log("Our OTP Info =>", otpInfo);
 
     // Return Response
     res.status(200).json({
@@ -129,7 +127,6 @@ const signup = async (req, res) => {
     const recentOTP = await OTP.findOne({ email })
       .sort({ createdAt: -1 })
       .limit(1);
-    console.log("Recent OTP Response => ", recentOTP);
 
     // Validate OTP
     if (recentOTP.length === 0 || recentOTP.otp !== otp) {
@@ -143,7 +140,6 @@ const signup = async (req, res) => {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log("Our Hashed Password => ", hashedPassword);
 
     const profileDetails = await Profile.create({
       gender: null,
@@ -151,7 +147,6 @@ const signup = async (req, res) => {
       about: null,
       contactNumber: null,
     });
-    console.log("Profile Details => ", profileDetails);
 
     try {
       var user = await User.create({
@@ -165,7 +160,6 @@ const signup = async (req, res) => {
         profile: profileDetails._id,
         avatar: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}%20${lastName}`,
       });
-      console.log("User Details => ", user);
     } catch (error) {
       console.log("Something went wrong during sign up ", error);
     }
@@ -240,13 +234,11 @@ const login = async (req, res) => {
       var token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE,
       });
-      console.log("Our Token => ", token);
 
       // console.log(typeof user);
       // user = user.toObject();
       user.token = token;
       user.password = undefined;
-      console.log("User Details ", user);
 
       const options = {
         expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
@@ -498,7 +490,6 @@ const resetPasswordToken = async (res, email, user) => {
         Please click below to reset your password : \n\n <a href="${resetUrl}" target="_blank" style="color: blue; text-decoration: underline;">Reset your password</a>
         `
       );
-      console.log("Mail Response => ", mailResponse);
     } catch (error) {
       return res.status(500).json({
         error,
@@ -563,7 +554,6 @@ const resetPassword = async (req, res) => {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log("Hashed Password => ", hashedPassword);
 
     // now Password update
     const updateResponse = await User.findOneAndUpdate(
@@ -575,7 +565,6 @@ const resetPassword = async (req, res) => {
       },
       { new: true } // this line give new updated values in which token and resetPasswordExpires exists otherwise this give old value in which this two value missing
     );
-    console.log("User Update Response => ", updateResponse);
 
     // Sent mail for reset password
 
@@ -587,7 +576,6 @@ const resetPassword = async (req, res) => {
         To visit our site : ${process.env.STUDY_NOTION_FRONTEND_SITE}
         `
       );
-      console.log("Mail Response", mailResponse);
     } catch (error) {
       return res.status(500).json({
         message: "Something went wrong during reset password mail sending",

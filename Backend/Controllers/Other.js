@@ -51,8 +51,6 @@ const contactUs = async (req, res) => {
       contactUsEmail(email, firstName, lastName, message, phoneNo, countryCode)
     );
 
-    console.log("55");
-
     return res.status(200).json({
       success: true,
       data: "Details sent successfully",

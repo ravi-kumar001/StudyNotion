@@ -101,7 +101,6 @@ const changeAvatar = async (req, res) => {
       100,
       80
     );
-    console.log("ChangeAvatarResponse => ", changeAvatarResponse);
 
     // Update Also in User Document   @Not Forget this for updating related document
     const updateUserResponse = await User.findByIdAndUpdate(
@@ -111,7 +110,6 @@ const changeAvatar = async (req, res) => {
       },
       { new: true }
     );
-    console.log("Update User Response ", updateUserResponse);
 
     return res.status(200).json({
       success: true,

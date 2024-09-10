@@ -65,48 +65,6 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// GetAllCourseDetails
-const getAllUserDetails = async (req, res) => {
-  try {
-    // for this we need user id
-    const userId = req.user.id;
-
-    // validation and get user details
-    const getAllUserDetailsResponse = await User.findById(userId)
-      .populate("additionalDetails")
-      .exec();
-    console.log(getAllUserDetailsResponse);
-
-    // Validation
-    if (!getAllUserDetailsResponse) {
-      return res.status(400).json({
-        success: false,
-        message: "User not exist",
-        status: 400,
-      });
-    }
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      status: 500,
-      message:
-        "Something went wrong during Get All User Details . Please try again",
-      error: error.message,
-    });
-  }
-};
-
-// Update Display Picture
-const updateDisplayPicture = async (req, res) => {};
-
-// Get Enrolled Courses
-const getEnrolledCourses = async (req, res) => {};
-
-
-
 module.exports = {
   updateProfile,
-  getAllUserDetails,
-  updateDisplayPicture,
-  getEnrolledCourses,
 };

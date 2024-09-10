@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-
+const { auth, authorize } = require("../middlewares/Auth");
 const {
   getAllReviews,
   getReview,
@@ -8,7 +8,6 @@ const {
   createReview,
   deleteReview
 } = require("../Controllers/RatingAndReviews");
-const { auth, authorize } = require("../middlewares/Auth");
 
 router.get("/getallreviews", getAllReviews);
 router.post("/getreview", getReview);

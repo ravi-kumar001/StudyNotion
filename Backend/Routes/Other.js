@@ -1,6 +1,6 @@
 const express = require("express");
-const { contactUs } = require("../Controllers/Other");
 const router = express.Router();
+const { contactUs } = require("../Controllers/Other");
 
 router.post("/contactus", contactUs);
 

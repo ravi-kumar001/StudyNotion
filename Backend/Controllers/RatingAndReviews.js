@@ -150,7 +150,6 @@ const getAllReviews = async (req, res) => {
       .populate({ path: "user", select: "firstName lastName email avatar" })
       .populate({ path: "course", select: "courseName" })
       .exec();
-    console.log("All Rating and Reviews Response => ", allRatingAndReviews);
 
     // Return Response
     return res.status(200).json({

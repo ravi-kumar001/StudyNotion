@@ -112,12 +112,6 @@ const getAllCategoryCourses = async (req, res) => {
       }
     }
 
-    console.log(
-      requestedCategory,
-      requestedCategoryCoursesMost,
-      requestedCategoryCoursesNew
-    );
-
     // // Handle the case there is no course available in selectedCategory
     // if (!selectedCategoryResponse.course.length == 0) {
     //   return res.status(405).json({

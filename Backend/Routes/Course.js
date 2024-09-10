@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-
+const { auth, authorize } = require("../middlewares/Auth");
 const {
   createCourse,
   getEnrolledCourseData,
@@ -8,17 +8,13 @@ const {
   editCourse,
   deleteCourse,
   getFullCourseDetails,
-  getAllPublishedCourses
+  getAllPublishedCourses,
 } = require("../Controllers/Course");
 
-const { auth, authorize } = require("../middlewares/Auth");
-
-// Course created by Instructor only
 router
   .route("/")
   .get(getAllPublishedCourses)
   .post(auth, authorize("Instructor"), createCourse);
-
 router.put("/editcourse", auth, authorize("Instructor"), editCourse);
 router.post(
   "/getfullcoursedetails",

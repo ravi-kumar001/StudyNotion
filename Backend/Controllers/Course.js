@@ -41,7 +41,6 @@ const createCourse = async (req, res) => {
     // Check for this user is instructor or not
     const userId = req.user.id;
     const instructorDetails = await User.findById(userId);
-    console.log("Instructor Details => ", instructorDetails);
 
     if (!instructorDetails) {
       return res.status(402).json({
@@ -99,7 +98,6 @@ const createCourse = async (req, res) => {
       100,
       80
     );
-    console.log("Thumbnail Response => ", thumbnailResponse);
 
     // create course
     const createCourseResponse = await Course.create({
@@ -113,7 +111,6 @@ const createCourse = async (req, res) => {
       thumbnail: thumbnailResponse.secure_url,
       tags,
     });
-    console.log("Create course Response => ", createCourseResponse);
 
     // add this course in user schema for current instructor i.e update user modal with this course id
     try {
@@ -126,7 +123,6 @@ const createCourse = async (req, res) => {
         },
         { new: true } // this line used for give updated response i.e give updated document
       );
-      console.log("Update User Response => ", updatedUserResponse);
     } catch (error) {
       console.log(error);
     }
@@ -224,7 +220,6 @@ const editCourse = async (req, res) => {
         });
       }
 
-      console.log("This is Done");
       if (!thumbnail.mimetype.startsWith("image")) {
         return res.status(402).json({
           success: false,
@@ -254,7 +249,6 @@ const editCourse = async (req, res) => {
         100,
         80
       );
-      console.log("Thumbnail Response => ", thumbnailResponse);
       course.thumbnail = thumbnailResponse.secure_url;
     }
 
@@ -337,7 +331,6 @@ const getFullCourseDetails = async (req, res) => {
         },
       })
       .exec();
-    console.log("Course Details => ", courseDetailsResponse);
 
     // Some validation on courseDetailsResponse
     if (!courseDetailsResponse) {
@@ -375,7 +368,6 @@ const getFullCourseDetails = async (req, res) => {
 const getAllCourse = async (req, res) => {
   try {
     const getAllCourseResponse = await Course.find();
-    console.log(getAllCourseResponse);
 
     res.status(200).json({
       success: true,
@@ -413,8 +405,6 @@ const getCourse = async (req, res) => {
         },
       })
       .exec();
-
-    console.log("Course Details fetched", course);
 
     if (!course || course.status === "Draft") {
       return res.status(400).json({

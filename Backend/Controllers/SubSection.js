@@ -74,7 +74,6 @@ const createSubSection = async (req, res) => {
       100,
       80
     );
-    console.log("VIDEO Details Response => ", videoDetails);
     /////////////////////////// ***** ///////////////////////////////////
 
     // create sub section
@@ -93,7 +92,6 @@ const createSubSection = async (req, res) => {
       { $push: { subSections: subSection._id } },
       { new: true }
     );
-    console.log("Updated Section Response " + updatedSectionResponse); // hw log updated section here , after adding populate query
 
     // update course - updated time duration of course
     const updatedCourse = await Course.findByIdAndUpdate(
@@ -194,7 +192,6 @@ const updateSubSection = async (req, res) => {
         100,
         80
       );
-      console.log("VIDEO Details Response => ", videoDetails);
 
       videoUrl = videoDetails.secure_url;
       /////////////////////////// ***** ///////////////////////////////////
