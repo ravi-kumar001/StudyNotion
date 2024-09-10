@@ -11,8 +11,6 @@ const updateProfile = async (req, res) => {
     const { dob, about, gender, contactNumber, firstName, lastName } = req.body; // Here dob = "", about = "" ka matlab if this is exist then its value asign otherwise empty string asign
     const userId = req.user.id;
 
-    console.log("Gender => ", gender);
-
     // Validation on data
     if (!gender || !contactNumber || !userId || !firstName || !lastName) {
       return res.status(400).json({
@@ -47,7 +45,6 @@ const updateProfile = async (req, res) => {
         new: true,
       }
     );
-    console.log("Updated User Response => ", updatedUserResponse);
 
     //  return response
     return res.status(200).json({

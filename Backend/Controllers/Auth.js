@@ -208,7 +208,7 @@ const login = async (req, res) => {
 
     // Validate data
     if (!email || !password) {
-      res.status(401).json({
+      return res.status(401).json({
         success: false,
         message: "All Fields are required",
       });
@@ -223,44 +223,27 @@ const login = async (req, res) => {
       });
     }
 
-    // Generate jwt after comparing password
-    const payload = {
-      email: user?.email,
-      role: user?.role,
-      id: user?._id,
-    };
+    // Generate jwt after comparing password pahle ==> hum payload bhejte the ab direct user bheh rahe hai payload banake bhejane ki jarurat nahi hai direct user bhej do or jwt.sign method me direct object banakar match kar lo
+    // const payload = {
+    //   email: user?.email,
+    //   role: user?.role,
+    //   id: user?._id,
+    // };
 
-    if (await bcrypt.compare(password, user.password)) {
-      var token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRE,
-      });
-
-      // console.log(typeof user);
+    if (!(await bcrypt.compare(password, user.password))) {
       // user = user.toObject();
-      user.token = token;
-      user.password = undefined;
+      // user.token = token; // Ye dono field update karne se koi fayada nahi hai or pahle password ko undefined karte the but this password is always in hashed formed
+      // user.password = undefined;
 
-      const options = {
-        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-        httpOnly: true,
-      };
-
-      return res.cookie("token", token, options).status(200).json({
-        token,
-        user,
-        status: 200,
-        message: "User logged In successfully",
-      });
-    } else {
       return res.status(403).json({
         success: false,
         error: "Incorrect Password",
-        message: "Incorrect Password ",
       });
     }
+
+    sendTokenResponse(res, user, 201);
   } catch (error) {
     return res.status(500).json({
-      status: 500,
       success: false,
       message: "Login Failed.Please try again later",
     });
@@ -609,7 +592,7 @@ const sendTokenResponse = (res, userDetails, statusCode) => {
       role: userDetails.role,
     },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_COOKIE_EXPIRE }
+    { expiresIn: process.env.JWT_COOKIE_EXPIRE + "d" }
   );
 
   const options = {

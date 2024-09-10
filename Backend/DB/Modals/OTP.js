@@ -26,7 +26,6 @@ const sendVerificationEmail = async (email, otp) => {
       "OTP Verification by StudyNotion",
       emailOtpTemplate(otp)
     );
-    console.log("Mail Response", mailResponse);
   } catch (error) {
     console.log("Error occured while sending email", error);
   }

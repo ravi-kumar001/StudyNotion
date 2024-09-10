@@ -30,7 +30,6 @@ const ratingAndReviewsSchema = new mongoose.Schema({
 });
 
 ratingAndReviewsSchema.statics.getAverageRating = async function (courseId) {
-  console.log(this);
   try {
     const obj = await this.aggregate([
       {

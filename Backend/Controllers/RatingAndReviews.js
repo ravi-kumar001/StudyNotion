@@ -304,7 +304,6 @@ const getReview = async (req, res) => {
         path: "course",
         select: "title _id",
       });
-    console.log("Review Details => ", review);
 
     if (!review) {
       return res.json({

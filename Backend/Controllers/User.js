@@ -12,7 +12,6 @@ require("dotenv").config();
 // @access    Private // VERIFIED
 const currentUser = async (req, res) => {
   const { id } = req.user;
-  console.log("User id => ", id);
   try {
     const userResponse = await User.findById({ _id: id })
       .populate("profile")

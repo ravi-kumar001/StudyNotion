@@ -125,7 +125,6 @@ const updateSubSection = async (req, res) => {
   try {
     // Data fetch
     const { title, timeDuration, description, subSectionId } = req.body;
-    console.log(title, timeDuration, description, subSectionId);
     let videoUrl = null;
 
     // Data validation
