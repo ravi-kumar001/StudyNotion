@@ -1,6 +1,4 @@
 const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
-console.log(BASE_URL); // Should now log the correct URL
-
 
 // AUTHENTICATION API
 export const authApi = {
