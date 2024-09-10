@@ -27,7 +27,7 @@ const userRoute = require("./Routes/User");
 
 // we use cors because backend entertain the frontend request
 const corsOptions = {
-  origin: " http://localhost:5173", // restricts access to this origin
+  origin: "https://study-notion-frontend-phi-nine.vercel.app/", // restricts access to this origin
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // allowed HTTP methods
   allowedHeaders: ["Content-Type", "Authorization"], // allowed headers
   credentials: true, // allows cookies and credentials to be sent
