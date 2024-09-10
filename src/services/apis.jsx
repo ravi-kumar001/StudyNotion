@@ -1,7 +1,7 @@
-// const BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL
-// const BASE_URL = "https://api-krishna-ayurvedic.onrender.com/api/v1"
+const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
+console.log(BASE_URL); // Should now log the correct URL
 
-const BASE_URL = "http://localhost:3000/api/v1";
+
 // AUTHENTICATION API
 export const authApi = {
   POST_SEND_OTP_API: BASE_URL + "/auth/sendotp",
