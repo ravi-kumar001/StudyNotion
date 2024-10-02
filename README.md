@@ -68,6 +68,7 @@ Make sure you have the following installed:
 
     **Frontend**:
     ```sh
+    cd frontend
     npm install
     ```
 
@@ -75,10 +76,41 @@ Make sure you have the following installed:
     Create a `.env` file in the backend directory with the following variables:
 
     ```env
-    PORT=3000
-    MONGO_URI=your_mongodb_connection_string
-    JWT_SECRET=your_jwt_secret
-    CLOUDINARY_URL=your_cloudinary_url
+    PORT = 3000
+
+    MONGO_ATLAS_URL=
+
+    JWT_SECRET=
+    JWT_COOKIE_EXPIRE=
+
+    NODE_ENV=
+
+    AVATAR_MAX_SIZE=
+    AVATAR_FOLDER_NAME=
+
+    THUMBNAIL_MAX_SIZE=
+    THUMBNAIL_FOLDER_NAME=
+
+    LECTURES_MAX_SIZE=
+    LECTURES_FOLDER_NAME=
+
+    CLOUDINARY_FOLDER_NAME=
+    CLOUDINARY_NAME=
+    CLOUDINARY_API_KEY=
+    CLOUDINARY_API_SECRET=
+
+    SMTP_HOST=
+    SMTP_PORT=
+    SMTP_USER=
+    SMTP_MASTER_PASSWORD=
+    SMTP_FROM=
+
+    ROZORPAY_KEY_ID=
+    ROZORPAY_KEY_SECRET=
+
+    STUDY_NOTION_FRONTEND_SITE =
+
+    SITE_OWNER_EMAIL=
     ```
 
 4. **Run the Application**:

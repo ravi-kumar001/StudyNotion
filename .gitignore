@@ -4,11 +4,11 @@ logs
 npm-debug.log*
 
 # Dependency directories
-Backend/node_modules/
+backend/node_modules/
 Client/node_modules/
-Backend/task.txt
-Backend/remember.txt
-Backend/*.txt
+backend/task.txt
+backend/remember.txt
+backend/*.txt
 
 
 # Optional npm cache directory

@@ -9,7 +9,7 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "start": "concurrently -n \"client,server\" -c \"bgBlue,bgYellow\" \"npm run dev\" \"npm run server\"",
-    "server": "cd backend && npm run dev"
+    "server": "cd ../backend && npm run dev"
   },
   "dependencies": {
     "@ramonak/react-progress-bar": "^5.2.0",
