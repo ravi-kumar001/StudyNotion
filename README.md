@@ -19,7 +19,7 @@ Welcome to **StudyNotion**, an educational platform designed to provide online c
 StudyNotion is a full-stack EdTech application that allows users to:
 - Register and enroll in courses.
 - Manage content based on roles (Student, Instructor, Admin).
-- Access personalized dashboard.
+- Access personalized dashboards.
 
 The project is built with the **MERN stack**, with separate modules for students, instructors, and admins.
 
