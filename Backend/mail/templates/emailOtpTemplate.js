@@ -1,5 +1,5 @@
 const emailOtpTemplate = (otp) => {
-	return `
+  return `
 	<!DOCTYPE html>
 	<html lang="en">
   <head>
@@ -70,7 +70,7 @@ const emailOtpTemplate = (otp) => {
       <!-- Header -->
       <div>
         <a href="https://ww7.solarmovie.to/">
-          <img class="logo" src="https://i.postimg.cc/qMRF0ctw/logo-yellow-email.png" alt="StudyNotion-Logo" />
+          <img class="logo" src="https://i.postimg.cc/QtHmnmg5/logo-yellow-email.png" alt="StudyNotion-Logo" />
         </a>
       </div>
 
